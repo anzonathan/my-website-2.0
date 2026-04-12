@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agricultural Services Database — Technical Documentation</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #1a5c32;
+    --primary-light: #e8f5e9;
+    --accent: #2e7d32;
+    --danger: #b85450;
+    --warn: #d79b00;
+    --blue: #1565c0;
+    --blue-light: #e3f2fd;
+    --ink: #1a1a2e;
+    --muted: #555;
+    --border: #d0d0d0;
+    --bg: #fafafa;
+    --card: #fff;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Inter', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ─── LAYOUT ─── */
+  html, body { height: 100%; }
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 13px;
+    line-height: 1.65;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ─── TOP BAR ─── */
+  #topbar {
+    height: 48px;
+    background: var(--primary);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 16px;
+    flex-shrink: 0;
+    z-index: 200;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+  #topbar .logo {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    opacity: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  #topbar .logo-icon {
+    width: 26px; height: 26px;
+    background: rgba(255,255,255,0.18);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  #topbar .breadcrumb {
+    font-size: 11px;
+    opacity: 0.6;
+    display: flex; align-items: center; gap: 6px;
+  }
+  #topbar .breadcrumb span { opacity: 0.4; }
+  #topbar a.eerd-link {
+    margin-left: auto;
+    font-size: 11px;
+    color: rgba(255,255,255,0.75);
+    text-decoration: none;
+    border: 1px solid rgba(255,255,255,0.25);
+    padding: 4px 12px;
+    border-radius: 4px;
+    transition: all 0.15s;
+  }
+  #topbar a.eerd-link:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+  /* ─── BODY SPLIT ─── */
+  #doc-layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ─── SIDEBAR ─── */
+  #sidebar {
+    width: 240px;
+    min-width: 240px;
+    background: #fff;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #sidebar-inner {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 0 32px;
+    scrollbar-width: thin;
+    scrollbar-color: #ddd transparent;
+  }
+  #sidebar-inner::-webkit-scrollbar { width: 4px; }
+  #sidebar-inner::-webkit-scrollbar-track { background: transparent; }
+  #sidebar-inner::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+
+  .nav-group {
+    margin-bottom: 4px;
+  }
+  .nav-group-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #aaa;
+    padding: 10px 20px 4px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #444;
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    transition: background 0.12s, border-color 0.12s, color 0.12s;
+    cursor: pointer;
+  }
+  .nav-item:hover {
+    background: #f5f9f5;
+    color: var(--primary);
+  }
+  .nav-item.active {
+    background: var(--primary-light);
+    border-left-color: var(--primary);
+    color: var(--primary);
+    font-weight: 600;
+  }
+  .nav-item .nav-num {
+    min-width: 18px;
+    height: 18px;
+    background: #eee;
+    color: #666;
+    font-size: 9px;
+    font-weight: 700;
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-family: var(--mono);
+  }
+  .nav-item.active .nav-num {
+    background: var(--primary);
+    color: #fff;
+  }
+  .nav-sub {
+    display: block;
+    padding: 4px 20px 4px 48px;
+    font-size: 11px;
+    color: #777;
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    transition: color 0.1s;
+  }
+  .nav-sub:hover { color: var(--primary); }
+  .nav-sub.active { color: var(--primary); font-weight: 600; }
+
+  .sidebar-version {
+    padding: 12px 20px;
+    font-size: 10px;
+    color: #bbb;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ─── CONTENT AREA ─── */
+  #content {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #ddd transparent;
+  }
+  #content::-webkit-scrollbar { width: 6px; }
+  #content::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+
+  #content-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 36px 40px 80px;
+  }
+
+  /* ─── COVER ─── */
+  .cover {
+    background: linear-gradient(135deg, var(--primary) 0%, #2d6a4f 60%, #1b4332 100%);
+    color: #fff;
+    border-radius: 12px;
+    padding: 48px 40px 36px;
+    margin-bottom: 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+  }
+  .cover-tag { font-size: 10px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; opacity: 0.65; margin-bottom: 10px; }
+  .cover h1 { font-size: 26px; font-weight: 700; line-height: 1.25; margin-bottom: 8px; }
+  .cover-sub { font-size: 14px; opacity: 0.75; margin-bottom: 24px; }
+  .cover-meta { display: flex; gap: 32px; flex-wrap: wrap; }
+  .cover-meta-item { font-size: 12px; opacity: 0.8; }
+  .cover-meta-item span { display: block; font-weight: 600; font-size: 13px; opacity: 1; }
+
+  /* ─── NAV ─── */
+  .toc {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 32px;
+    overflow: hidden;
+  }
+  .toc-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    cursor: pointer;
+    user-select: none;
+    gap: 10px;
+  }
+  .toc-toggle:hover { background: #f5f9f5; }
+  .toc-label {
+    font-size: 12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--muted);
+  }
+  .toc-arrow {
+    width: 18px; height: 18px;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.25s ease;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .toc-arrow svg { display: block; }
+  .toc.open .toc-arrow { transform: rotate(180deg); }
+  .toc-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+    padding: 0 20px;
+  }
+  .toc.open .toc-body {
+    max-height: 300px;
+    padding: 0 20px 16px;
+  }
+  .toc ol { padding-left: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; }
+  .toc li { font-size: 12px; }
+  .toc a { color: var(--primary); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  /* ─── SECTIONS ─── */
+  section { margin-bottom: 40px; }
+  h2.sec {
+    font-size: 17px; font-weight: 700;
+    color: var(--primary);
+    border-bottom: 2px solid var(--primary-light);
+    padding-bottom: 6px;
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .n {
+    background: var(--primary);
+    color: #fff;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  h3.sub { font-size: 13px; font-weight: 600; margin: 18px 0 8px; color: var(--ink); }
+
+  p { margin-bottom: 10px; }
+
+  /* ─── TABLES ─── */
+  table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 12px; }
+  th { background: var(--primary-light); color: var(--primary); font-weight: 600; padding: 7px 10px; text-align: left; border: 1px solid #c8e6c9; }
+  td { padding: 6px 10px; border: 1px solid var(--border); vertical-align: top; }
+  tr:nth-child(even) td { background: #f9fdf9; }
+
+  /* ─── CODE BLOCKS ─── */
+  pre {
+    background: #1a1a2e;
+    color: #e8f5e9;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    line-height: 1.7;
+    padding: 16px 18px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin-bottom: 16px;
+    border-left: 3px solid var(--accent);
+  }
+  .kw   { color: #80cbc4; }
+  .fn   { color: #ffcc02; }
+  .str  { color: #a5d6a7; }
+  .cmt  { color: #607d8b; font-style: italic; }
+  .var  { color: #ef9a9a; }
+
+  /* ─── BADGES ─── */
+  .badge {
+    display: inline-block;
+    font-size: 10px; font-weight: 600;
+    padding: 2px 7px; border-radius: 4px;
+    vertical-align: middle;
+    font-family: var(--mono);
+  }
+  .pk  { background: #e3f2fd; color: #0d47a1; }
+  .fk  { background: #f3e5f5; color: #6a1b9a; }
+  .trg { background: #fce4ec; color: #880e4f; }
+  .gen { background: #fff8e1; color: #e65100; }
+  .b-green { background: var(--primary-light); color: var(--primary); }
+  .b-red   { background: #fce4ec; color: #880e4f; }
+  .b-blue  { background: #e3f2fd; color: #0d47a1; }
+  .b-warn  { background: #fff8e1; color: #bf360c; }
+
+  /* ─── CALLOUT BOXES ─── */
+  .callout {
+    border-left: 4px solid;
+    padding: 10px 14px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 12px;
+  }
+  .callout.info  { border-color: #1565c0; background: var(--blue-light); }
+  .callout.warn  { border-color: #d79b00; background: #fffde7; }
+  .callout.success { border-color: var(--primary); background: var(--primary-light); }
+
+  /* ─── LAYER CHIPS ─── */
+  .chip { display: inline-block; padding: 2px 9px; border-radius: 12px; font-size: 10px; font-weight: 600; margin: 2px; }
+  .c-people  { background: #e1d5e7; color: #4a148c; }
+  .c-farm    { background: #d5e8d4; color: #1b5e20; }
+  .c-prod    { background: #ffe6cc; color: #bf360c; }
+  .c-dist    { background: #f8cecc; color: #b71c1c; }
+  .c-export  { background: #dae8fc; color: #0d47a1; }
+  .c-admin   { background: #f5f5f5; color: #424242; border: 1px solid #ddd; }
+  .c-support { background: #ffe6ff; color: #880e4f; }
+
+  /* ─── TRIGGER CARD ─── */
+  .trigger-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .trigger-card-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 14px;
+    background: #f5f5f5;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 12px; font-weight: 500;
+  }
+  .trigger-card-body { padding: 12px 14px; font-size: 12px; }
+  .trigger-card-body strong { color: var(--primary); }
+
+  /* ─── PROCEDURE CARD ─── */
+  .proc-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--blue);
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 12px;
+    padding: 12px 14px;
+    font-size: 12px;
+  }
+  .proc-card .proc-name { font-family: var(--mono); font-weight: 600; color: var(--blue); margin-bottom: 4px; font-size: 12px; }
+
+  footer {
+    text-align: center;
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 48px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ TOP BAR ═══ -->
+<div id="topbar">
+  <div class="logo">
+    <div class="logo-icon">🌱</div>
+    Agri_DB
+  </div>
+  <div class="breadcrumb">
+    <span>›</span> Technical Documentation
+  </div>
+  <a href="/public/eerd.html" class="eerd-link">↗ Open EERD</a>
+</div>
+
+<!-- ═══ BODY SPLIT ═══ -->
+<div id="doc-layout">
+
+  <!-- ─── SIDEBAR ─── -->
+  <nav id="sidebar">
+    <div id="sidebar-inner">
+
+      <div class="nav-group">
+        <div class="nav-group-label">Getting Started</div>
+        <a class="nav-item" href="#s1" data-section="s1">
+          <span class="nav-num">1</span> System Overview
+        </a>
+        <a class="nav-item" href="#s2" data-section="s2">
+          <span class="nav-num">2</span> Architecture
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group-label">Schema</div>
+        <a class="nav-item" href="#s3" data-section="s3">
+          <span class="nav-num">3</span> Table Catalogue
+        </a>
+        <a class="nav-sub" href="#s3">People Layer</a>
+        <a class="nav-sub" href="#s3">Farm / Garden Layer</a>
+        <a class="nav-sub" href="#s3">Production Layer</a>
+        <a class="nav-sub" href="#s3">Distribution Layer</a>
+        <a class="nav-sub" href="#s3">Export Layer</a>
+        <a class="nav-item" href="#s4" data-section="s4">
+          <span class="nav-num">4</span> EER Design Features
+        </a>
+        <a class="nav-sub" href="#s4">Specialization Types</a>
+        <a class="nav-sub" href="#s4">Categorization (Union)</a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group-label">Automation</div>
+        <a class="nav-item" href="#s5" data-section="s5">
+          <span class="nav-num">5</span> Triggers
+        </a>
+        <a class="nav-sub" href="#s5">BEFORE INSERT guards</a>
+        <a class="nav-sub" href="#s5">AFTER INSERT/UPDATE</a>
+        <a class="nav-item" href="#s6" data-section="s6">
+          <span class="nav-num">6</span> Stored Procedures
+        </a>
+        <a class="nav-item" href="#s7" data-section="s7">
+          <span class="nav-num">7</span> Transaction Management
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group-label">Data Access</div>
+        <a class="nav-item" href="#s8" data-section="s8">
+          <span class="nav-num">8</span> Views
+        </a>
+        <a class="nav-item" href="#s9" data-section="s9">
+          <span class="nav-num">9</span> Security &amp; Access Control
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group-label">Operations</div>
+        <a class="nav-item" href="#s10" data-section="s10">
+          <span class="nav-num">10</span> Backup &amp; Recovery
+        </a>
+      </div>
+
+    </div>
+    <div class="sidebar-version">CSC2209 · Easter 2026 · MySQL</div>
+  </nav>
+
+  <!-- ─── CONTENT ─── -->
+  <div id="content">
+    <div id="content-inner">
+
+<!-- ══════════════════════════ COVER ══════════════════════════ -->
+<div class="cover">
+  <div class="cover-tag">Uganda Christian University &nbsp;|&nbsp; CSC2209 — Database Programming</div>
+  <h1>Agricultural Services Database<br>Technical Documentation</h1>
+  <div class="cover-sub">Development of a Functional Agricultural Services Database for the Ministry of Agriculture</div>
+  <div class="cover-meta">
+    <div class="cover-meta-item">Course<span>CSC2209 — Database Programming</span></div>
+    <div class="cover-meta-item">Programme<span>BSCS Year 2, Semester 2</span></div>
+    <div class="cover-meta-item">Assessment<span>Easter 2026 Project-Based Exam</span></div>
+    <div class="cover-meta-item">Date<span>April 2026</span></div>
+    <div class="cover-meta-item">Database<span>MySQL / VS Code</span></div>
+  </div>
+</div>
+
+
+
+<!-- ══════════════════════════ S1: OVERVIEW ══════════════════════════ -->
+<section id="s1">
+  <h2 class="sec"><span class="n">1</span> System Overview</h2>
+
+  <p>The <strong>Agricultural Services Database</strong> is a relational database system built using <strong>MySQL</strong> within VS Code to support Uganda's Ministry of Agriculture in managing coffee production, farmer registration, input distribution, and export traceability. The system addresses the full coffee supply chain — from registering a farmer and their garden through to tracking exports.</p>
+
+  <div class="callout success">
+    <strong>Core Objective:</strong> Enable the Ministry to know every coffee grower, track their production season by season, distribute agricultural inputs, coordinate extension worker visits, and generate ministry-level production and export reports.
+  </div>
+
+  <h3 class="sub">Key Functional Capabilities</h3>
+  <table>
+    <tr><th>Capability</th><th>Description</th></tr>
+    <tr><td>Farmer Registration</td><td>Record all coffee growers with their NIN-linked personal details, farm, and garden information.</td></tr>
+    <tr><td>Production Tracking</td><td>Record harvests per garden per season including grade, quantity (kg), and production costs.</td></tr>
+    <tr><td>Input Distribution</td><td>Plan and record delivery of seedlings, fertilizers, pesticides, and tools to verified gardens.</td></tr>
+    <tr><td>Extension Services</td><td>Log farm visits, raise resource requests, and link workers to specific gardens.</td></tr>
+    <tr><td>Processing &amp; Export</td><td>Track raw-to-processed coffee conversion and export batches with USD values.</td></tr>
+    <tr><td>Location Hierarchy</td><td>4-level geographic model: Region → District → Subcounty → Village.</td></tr>
+    <tr><td>Reporting</td><td>Ministry-level views for regional production, export totals, and yield analysis.</td></tr>
+  </table>
+</section>
+
+<!-- ══════════════════════════ S2: ARCHITECTURE ══════════════════════════ -->
+<section id="s2">
+  <h2 class="sec"><span class="n">2</span> Database Architecture</h2>
+
+  <p>The database is organized into <strong>seven thematic layers</strong>, each grouping related entities. This layering mirrors the real-world domains of the Ministry system:</p>
+
+  <table>
+    <tr><th>Layer</th><th>Color</th><th>Key Entities</th><th>Purpose</th></tr>
+    <tr>
+      <td><span class="chip c-people">People</span></td>
+      <td>Purple</td>
+      <td>Person, Farmer, Staff, ExtWorker, DBManager, SystemUser</td>
+      <td>All human actors — superclass/subtype hierarchy</td>
+    </tr>
+    <tr>
+      <td><span class="chip c-farm">Farm / Garden</span></td>
+      <td>Green</td>
+      <td>Farm, Garden, Cooperative, CoopMember, GardenSeason</td>
+      <td>Physical assets — farms, plots, cooperatives</td>
+    </tr>
+    <tr>
+      <td><span class="chip c-prod">Production</span></td>
+      <td>Orange</td>
+      <td>Season, ProductionRecord, SaleRecord, CoffeeType, CoffeeGrade, MarketPrice</td>
+      <td>Harvest recording and price management</td>
+    </tr>
+    <tr>
+      <td><span class="chip c-dist">Distribution</span></td>
+      <td>Red</td>
+      <td>Distribution, DistributionItem, Inputs, InputInventory, ReceivedInputs, InputCategory</td>
+      <td>Agricultural input stock and delivery</td>
+    </tr>
+    <tr>
+      <td><span class="chip c-export">Export</span></td>
+      <td>Blue</td>
+      <td>Processor, ProcessingRecord, Exporter, ExportBatch</td>
+      <td>Post-harvest processing and international export</td>
+    </tr>
+    <tr>
+      <td><span class="chip c-admin">Admin</span></td>
+      <td>Grey</td>
+      <td>License, LicenseType, Region, District, Subcounty, Village, Office</td>
+      <td>Licensing, location, and office management</td>
+    </tr>
+    <tr>
+      <td><span class="chip c-support">Support</span></td>
+      <td>Pink</td>
+      <td>FarmVisit, ResourceRequest, Scheme, SchemeEnrolment, CropMarketPrice</td>
+      <td>Extension visits, government schemes, and market data</td>
+    </tr>
+  </table>
+
+  <h3 class="sub">Supply Chain Data Flow</h3>
+  <div class="callout info">
+    <strong>End-to-end traceability:</strong><br>
+    <code>Village → Person → Farmer → Farm → Garden → ProductionRecord → ProcessingRecord → ExportBatch</code><br>
+    Every kilogram of coffee exported can be traced back to the specific garden and farmer who grew it.
+  </div>
+</section>
+
+<!-- ══════════════════════════ S3: TABLE CATALOGUE ══════════════════════════ -->
+<section id="s3">
+  <h2 class="sec"><span class="n">3</span> Table Catalogue (38 Tables)</h2>
+
+  <h3 class="sub">People Layer</h3>
+  <table>
+    <tr><th>Table</th><th>Primary Key</th><th>Key Foreign Keys</th><th>Special Columns</th><th>Description</th></tr>
+    <tr><td><strong>Person</strong></td><td>NIN <span class="badge pk">PK</span></td><td>VillageID</td><td>—</td><td>Root superclass for all human actors. National ID Number is the unique identifier.</td></tr>
+    <tr><td><strong>Farmer</strong></td><td>FarmerID <span class="badge pk">PK</span></td><td>NIN, FarmID</td><td>—</td><td>DISJOINT subtype of Person. Every registered coffee grower.</td></tr>
+    <tr><td><strong>Staff</strong></td><td>StaffID <span class="badge pk">PK</span></td><td>NIN</td><td>Role</td><td>DISJOINT subtype of Person. Ministry employees.</td></tr>
+    <tr><td><strong>ExtensionWorker</strong></td><td>WorkerID <span class="badge pk">PK</span></td><td>StaffID, RegionID, OfficeID</td><td>—</td><td>DISJOINT subtype of Staff. Field agents visiting farms.</td></tr>
+    <tr><td><strong>DatabaseManager</strong></td><td>ManagerID <span class="badge pk">PK</span></td><td>StaffID</td><td>AccessLevel</td><td>DISJOINT subtype of Staff. System administrators.</td></tr>
+    <tr><td><strong>SystemUser</strong></td><td>UserID <span class="badge pk">PK</span></td><td>NIN</td><td>PasswordHash, IsActive</td><td>OVERLAPPING — any Person subtype can have login credentials.</td></tr>
+  </table>
+
+  <h3 class="sub">Farm / Garden Layer</h3>
+  <table>
+    <tr><th>Table</th><th>Primary Key</th><th>Key Foreign Keys</th><th>Special Columns</th><th>Description</th></tr>
+    <tr><td><strong>Farm</strong></td><td>FarmID <span class="badge pk">PK</span></td><td>LicenseID</td><td>Acreage <span class="badge trg">TRG</span>, IsGroup <span class="badge trg">TRG</span>, CoffeeVariety <span class="badge trg">TRG</span></td><td>A licensed farm. Acreage auto-computed from child gardens by trigger.</td></tr>
+    <tr><td><strong>Garden</strong></td><td>GardenID <span class="badge pk">PK</span></td><td>FarmID, VillageID, CoffeeGradeID</td><td>GPS, IsVerified, NumberOfTrees</td><td>Physical plot. Must be verified before harvests can be recorded.</td></tr>
+    <tr><td><strong>GardenSeason</strong></td><td>GardenSeasonID <span class="badge pk">PK</span></td><td>GardenID, SeasonID</td><td>—</td><td>Bridge table enforcing: one garden → one active season at a time.</td></tr>
+    <tr><td><strong>Cooperative</strong></td><td>RegNo <span class="badge pk">PK</span></td><td>DistrictID, ContactNIN</td><td>—</td><td>Farmers' group. M:N relationship with Farmer via CooperativeMember.</td></tr>
+    <tr><td><strong>CooperativeMember</strong></td><td>Composite (CoopRegNo + FarmerID)</td><td>CoopRegNo, FarmerID</td><td>MemberRole</td><td>Bridge resolving the M:N between Cooperative and Farmer.</td></tr>
+  </table>
+
+  <h3 class="sub">Production Layer</h3>
+  <table>
+    <tr><th>Table</th><th>Primary Key</th><th>Key Foreign Keys</th><th>Special Columns</th><th>Description</th></tr>
+    <tr><td><strong>Season</strong></td><td>SeasonID <span class="badge pk">PK</span></td><td>—</td><td>SeasonOrder (1st/2nd)</td><td>A harvest period. Uganda has two coffee seasons per year.</td></tr>
+    <tr><td><strong>ProductionRecord</strong></td><td>ProdID <span class="badge pk">PK</span></td><td>GardenID, SeasonID</td><td>HarvestedKg, ProductionCost</td><td>Single harvest event. Blocked by trigger if garden is unverified.</td></tr>
+    <tr><td><strong>SaleRecord</strong></td><td>SaleID <span class="badge pk">PK</span></td><td>ProdID, BuyerID</td><td>TotalAmount <span class="badge gen">GEN</span></td><td>Records sale of harvested coffee. TotalAmount = Qty × UnitPrice.</td></tr>
+    <tr><td><strong>CoffeeType</strong></td><td>CoffeeTypeID <span class="badge pk">PK</span></td><td>—</td><td>PlantsPerAcre, AltitudeRange</td><td>Arabica or Robusta. Stores spacing and altitude requirements.</td></tr>
+    <tr><td><strong>CoffeeGrade</strong></td><td>GradeID <span class="badge pk">PK</span></td><td>CoffeeTypeID</td><td>MinPriceUGX, MaxPriceUGX</td><td>Kiboko, FAQ, Screen 18 (Robusta); Bugisu AA/A/B (Arabica).</td></tr>
+    <tr><td><strong>CropMarketPrice</strong></td><td>PriceID <span class="badge pk">PK</span></td><td>GradeID, RegionID</td><td>PriceDate, Source</td><td>Daily market price per grade per region.</td></tr>
+  </table>
+
+  <h3 class="sub">Distribution Layer</h3>
+  <table>
+    <tr><th>Table</th><th>Primary Key</th><th>Key Foreign Keys</th><th>Special Columns</th><th>Description</th></tr>
+    <tr><td><strong>Distribution</strong></td><td>DistribID <span class="badge pk">PK</span></td><td>FarmerID, GardenID, WorkerID</td><td>DispatchTime <span class="badge trg">TRG</span>, QualityCert</td><td>One distribution event to a garden. DispatchTime set by trigger.</td></tr>
+    <tr><td><strong>DistributionItem</strong></td><td>ItemID <span class="badge pk">PK</span></td><td>DistribID, InputID</td><td>QuantityGiven</td><td>Bridge: each distribution can contain many types of inputs.</td></tr>
+    <tr><td><strong>Inputs</strong></td><td>InputID <span class="badge pk">PK</span></td><td>CategoryID</td><td>Qty, ReorderLevel</td><td>Supertype for all agricultural inputs. Stock level tracked here.</td></tr>
+    <tr><td><strong>InputInventory</strong></td><td>InvID <span class="badge pk">PK</span></td><td>InputID</td><td>BatchNo, ExpiryDate, ConditionStatus</td><td>DISJOINT subtype of Inputs. Items currently in store.</td></tr>
+    <tr><td><strong>ReceivedInputs</strong></td><td>ReceivedID <span class="badge pk">PK</span></td><td>InputID</td><td>Giver, ReceivedDate, QuantityReceived</td><td>DISJOINT subtype of Inputs. Newly received shipments.</td></tr>
+    <tr><td><strong>InputCategory</strong></td><td>CatID <span class="badge pk">PK</span></td><td>—</td><td>—</td><td>Seedling, Fertilizer, Pesticide, Fungicide, Tool, Equipment.</td></tr>
+  </table>
+
+  <h3 class="sub">Export Layer</h3>
+  <table>
+    <tr><th>Table</th><th>Primary Key</th><th>Key Foreign Keys</th><th>Special Columns</th><th>Description</th></tr>
+    <tr><td><strong>Processor</strong></td><td>ProcessorID <span class="badge pk">PK</span></td><td>LicenseID, VillageID</td><td>ProcessorType</td><td>Factory that processes raw coffee. Can OVERLAP with Exporter role.</td></tr>
+    <tr><td><strong>ProcessingRecord</strong></td><td>ProcessID <span class="badge pk">PK</span></td><td>GardenID, ProcessorID, SeasonID</td><td>LossKg <span class="badge gen">GEN</span>, YieldPercent <span class="badge gen">GEN</span></td><td>Tracks raw→processed conversion. Loss and yield computed by trigger.</td></tr>
+    <tr><td><strong>Exporter</strong></td><td>ExporterID <span class="badge pk">PK</span></td><td>LicenseID, ContactNIN</td><td>UCDARegNo</td><td>Licensed coffee exporter. Can OVERLAP with Processor role.</td></tr>
+    <tr><td><strong>ExportBatch</strong></td><td>BatchID <span class="badge pk">PK</span></td><td>ExporterID, ProcessID, SeasonID, GradeID</td><td>TotalUSD <span class="badge gen">GEN</span></td><td>One export shipment. TotalUSD auto-computed by trigger.</td></tr>
+  </table>
+
+  <h3 class="sub">Admin &amp; Support Layers</h3>
+  <table>
+    <tr><th>Table</th><th>Primary Key</th><th>Key Foreign Keys</th><th>Description</th></tr>
+    <tr><td><strong>License</strong></td><td>LicenseID <span class="badge pk">PK</span></td><td>LicenseTypeID, HolderNIN</td><td>Category union — can be held by Person or Cooperative. Checked before distribution and export.</td></tr>
+    <tr><td><strong>LicenseType</strong></td><td>LicenseTypeID <span class="badge pk">PK</span></td><td>—</td><td>Defines categories: Farm License, Processor License, Exporter (UCDA) License.</td></tr>
+    <tr><td><strong>Region / District / Subcounty / Village</strong></td><td>Each has own PK</td><td>Hierarchical FKs</td><td>4-level location hierarchy. Village is the leaf — referenced by Person, Garden, Processor.</td></tr>
+    <tr><td><strong>Office</strong></td><td>OfficeID <span class="badge pk">PK</span></td><td>RegionID</td><td>Extension office. ExtensionWorker assigned to an Office which serves a Region.</td></tr>
+    <tr><td><strong>FarmVisit</strong></td><td>VisitID <span class="badge pk">PK</span></td><td>WorkerID, FarmerID, GardenID</td><td>Logs each extension worker visit. Can lead to ResourceRequest.</td></tr>
+    <tr><td><strong>ResourceRequest</strong></td><td>RequestID <span class="badge pk">PK</span></td><td>VisitID, InputID, ApprovedBy</td><td>Raised during a FarmVisit. When approved, triggers creation of a Distribution automatically.</td></tr>
+    <tr><td><strong>Scheme / SchemeEnrolment</strong></td><td>SchemeID / EnrolID</td><td>FarmerID, SchemeID</td><td>Government/NGO support programmes. M:N bridge between Farmer and Scheme.</td></tr>
+  </table>
+</section>
+
+<!-- ══════════════════════════ S4: EER FEATURES ══════════════════════════ -->
+<section id="s4">
+  <h2 class="sec"><span class="n">4</span> EER Design Features</h2>
+
+  <h3 class="sub">Specialization / Generalization</h3>
+  <table>
+    <tr><th>Hierarchy</th><th>Type</th><th>Rule</th></tr>
+    <tr>
+      <td>Person → {Farmer, Staff, SystemUser}</td>
+      <td><span class="badge b-warn">OVERLAPPING (o)</span></td>
+      <td>A Person can be both a SystemUser AND a Farmer or Staff. SystemUser overlaps with all subtypes.</td>
+    </tr>
+    <tr>
+      <td>Staff → {ExtensionWorker, DatabaseManager}</td>
+      <td><span class="badge b-red">DISJOINT (d)</span></td>
+      <td>A Staff member is EITHER a field Extension Worker OR a Database Manager — never both.</td>
+    </tr>
+    <tr>
+      <td>Inputs → {InputInventory, ReceivedInputs}</td>
+      <td><span class="badge b-red">DISJOINT (d)</span></td>
+      <td>An Input record is EITHER in store inventory OR a new shipment — not both simultaneously.</td>
+    </tr>
+    <tr>
+      <td>Processor / Exporter (ServiceProvider)</td>
+      <td><span class="badge b-warn">OVERLAPPING (o)</span></td>
+      <td>A company can be both a Processor AND an Exporter (e.g. vertically integrated factory).</td>
+    </tr>
+  </table>
+
+  <h3 class="sub">Categorization (Union Type)</h3>
+  <table>
+    <tr><th>Union</th><th>Members</th><th>Implementation</th></tr>
+    <tr><td>License Holder</td><td>Person (NIN), Cooperative (RegNo)</td><td>License.HolderNIN (nullable) + HolderType ENUM. One field is populated, the other NULL.</td></tr>
+    <tr><td>Sale Buyer</td><td>Cooperative, Exporter, Private Person</td><td>SaleRecord.BuyerID + BuyerType ENUM (COOP / EXPORTER / INDIVIDUAL).</td></tr>
+  </table>
+
+  <h3 class="sub">Attribute Inheritance via Triggers</h3>
+  <div class="callout info">
+    <strong>Farm.Acreage</strong> is never entered directly — it is computed as <code>SUM(Garden.Acreage)</code> for all gardens belonging to that farm. The trigger <em>AfterGardenInsertUpdate</em> maintains this automatically.<br><br>
+    <strong>ProcessingRecord.LossKg</strong> and <strong>YieldPercent</strong> are generated columns maintained by the <em>AfterProcessingRecord</em> trigger, ensuring they are always consistent with RawKgIn and ProcessedKgOut.
+  </div>
+</section>
+
+<!-- ══════════════════════════ S5: TRIGGERS ══════════════════════════ -->
+<section id="s5">
+  <h2 class="sec"><span class="n">5</span> Triggers</h2>
+  <p>Triggers implement automated business rules that fire in response to data change events. The system uses <strong>12 triggers</strong> across BEFORE and AFTER INSERT/UPDATE events.</p>
+
+  <!-- T1 -->
+  <div class="trigger-card">
+    <div class="trigger-card-head">
+      <span>AfterGardenInsertUpdate</span>
+      <span class="badge b-green">AFTER INSERT / UPDATE ON Garden</span>
+    </div>
+    <div class="trigger-card-body">
+      <strong>Purpose:</strong> Maintains <code>Farm.Acreage</code> as the sum of all garden acreages for that farm. Also sets <code>Farm.IsGroup = TRUE</code> if more than one cooperative member is linked to the farm.
+    </div>
+  </div>
+<pre><span class="kw">DELIMITER</span> //
+<span class="kw">CREATE TRIGGER</span> <span class="fn">AfterGardenInsertUpdate</span>
+<span class="kw">AFTER INSERT ON</span> Garden
+<span class="kw">FOR EACH ROW</span>
+<span class="kw">BEGIN</span>
+  <span class="kw">UPDATE</span> Farm
+  <span class="kw">SET</span> Acreage = (
+    <span class="kw">SELECT SUM</span>(Acreage) <span class="kw">FROM</span> Garden <span class="kw">WHERE</span> FarmID = NEW.FarmID
+  )
+  <span class="kw">WHERE</span> FarmID = NEW.FarmID;
+<span class="kw">END</span>//
+<span class="kw">DELIMITER</span> ;</pre>
+
+  <!-- T2 -->
+  <div class="trigger-card">
+    <div class="trigger-card-head">
+      <span>BeforeDistributionItemInsert</span>
+      <span class="badge b-red">BEFORE INSERT ON DistributionItem</span>
+    </div>
+    <div class="trigger-card-body">
+      <strong>Purpose:</strong> Validates that <code>Inputs.Qty &gt;= QuantityGiven</code> before any item is distributed. Raises <code>SQLSTATE 45000</code> to abort the insert if stock is insufficient. Prevents over-distribution before it occurs.
+    </div>
+  </div>
+<pre><span class="kw">CREATE TRIGGER</span> <span class="fn">BeforeDistributionItemInsert</span>
+<span class="kw">BEFORE INSERT ON</span> DistributionItem
+<span class="kw">FOR EACH ROW</span>
+<span class="kw">BEGIN</span>
+  <span class="kw">DECLARE</span> <span class="var">available</span> <span class="kw">DECIMAL</span>(10,2);
+  <span class="kw">SELECT</span> Qty <span class="kw">INTO</span> <span class="var">available</span> <span class="kw">FROM</span> Inputs <span class="kw">WHERE</span> InputID = NEW.InputID;
+  <span class="kw">IF</span> <span class="var">available</span> &lt; NEW.QuantityGiven <span class="kw">THEN</span>
+    <span class="kw">SIGNAL SQLSTATE</span> <span class="str">'45000'</span>
+    <span class="kw">SET</span> MESSAGE_TEXT = <span class="str">'Insufficient stock for this input item.'</span>;
+  <span class="kw">END IF</span>;
+<span class="kw">END</span>//</pre>
+
+  <!-- T3 -->
+  <div class="trigger-card">
+    <div class="trigger-card-head">
+      <span>AfterDistributionItemInsert</span>
+      <span class="badge b-green">AFTER INSERT ON DistributionItem</span>
+    </div>
+    <div class="trigger-card-body">
+      <strong>Purpose:</strong> Deducts <code>QuantityGiven</code> from <code>Inputs.Qty</code> after a successful distribution item insert. Also inserts a record into <code>DistributionLog</code> for full audit trail.
+    </div>
+  </div>
+<pre><span class="kw">CREATE TRIGGER</span> <span class="fn">AfterDistributionItemInsert</span>
+<span class="kw">AFTER INSERT ON</span> DistributionItem
+<span class="kw">FOR EACH ROW</span>
+<span class="kw">BEGIN</span>
+  <span class="kw">UPDATE</span> Inputs
+  <span class="kw">SET</span> Qty = Qty - NEW.QuantityGiven
+  <span class="kw">WHERE</span> InputID = NEW.InputID;
+
+  <span class="kw">INSERT INTO</span> DistributionLog (DistribID, InputID, QuantityGiven, LogTime)
+  <span class="kw">VALUES</span> (NEW.DistribID, NEW.InputID, NEW.QuantityGiven, <span class="fn">NOW</span>());
+<span class="kw">END</span>//</pre>
+
+  <!-- T4 -->
+  <div class="trigger-card">
+    <div class="trigger-card-head">
+      <span>ValidatePlotOwnership</span>
+      <span class="badge b-red">BEFORE INSERT ON Distribution</span>
+    </div>
+    <div class="trigger-card-body">
+      <strong>Purpose:</strong> Verifies that <code>Distribution.GardenID → Garden.FarmID → Farmer.FarmerID</code> matches <code>Distribution.FarmerID</code>. Prevents recording a distribution against a garden that does not belong to the specified farmer.
+    </div>
+  </div>
+
+  <!-- T5 -->
+  <div class="trigger-card">
+    <div class="trigger-card-head">
+      <span>AfterDistributionStatusChange</span>
+      <span class="badge b-green">AFTER UPDATE ON Distribution</span>
+    </div>
+    <div class="trigger-card-body">
+      <strong>Purpose:</strong> When <code>DeliveryStatus</code> changes to <code>'Dispatched'</code>, automatically sets <code>DispatchTime = NOW()</code>. When it changes to <code>'Delivered'</code>, logs the event to <code>DeliveryLog</code>. Enforces automatic timestamp management.
+    </div>
+  </div>
+<pre><span class="kw">CREATE TRIGGER</span> <span class="fn">AfterDistributionStatusChange</span>
+<span class="kw">AFTER UPDATE ON</span> Distribution
+<span class="kw">FOR EACH ROW</span>
+<span class="kw">BEGIN</span>
+  <span class="kw">IF</span> NEW.DeliveryStatus = <span class="str">'Dispatched'</span> <span class="kw">AND</span> OLD.DeliveryStatus != <span class="str">'Dispatched'</span> <span class="kw">THEN</span>
+    <span class="kw">UPDATE</span> Distribution <span class="kw">SET</span> DispatchTime = <span class="fn">NOW</span>()
+    <span class="kw">WHERE</span> DistribID = NEW.DistribID;
+  <span class="kw">END IF</span>;
+<span class="kw">END</span>//</pre>
+
+  <!-- T6 -->
+  <div class="trigger-card">
+    <div class="trigger-card-head">
+      <span>BlockUnverifiedGardenHarvest</span>
+      <span class="badge b-red">BEFORE INSERT ON ProductionRecord</span>
+    </div>
+    <div class="trigger-card-body">
+      <strong>Purpose:</strong> Checks <code>Garden.IsVerified = TRUE</code> before allowing a harvest record. If the garden has not yet been verified by an extension worker, the insert is blocked. Enforces the farm verification business rule.
+    </div>
+  </div>
+<pre><span class="kw">CREATE TRIGGER</span> <span class="fn">BlockUnverifiedGardenHarvest</span>
+<span class="kw">BEFORE INSERT ON</span> ProductionRecord
+<span class="kw">FOR EACH ROW</span>
+<span class="kw">BEGIN</span>
+  <span class="kw">DECLARE</span> <span class="var">verified</span> <span class="kw">BOOLEAN</span>;
+  <span class="kw">SELECT</span> IsVerified <span class="kw">INTO</span> <span class="var">verified</span> <span class="kw">FROM</span> Garden <span class="kw">WHERE</span> GardenID = NEW.GardenID;
+  <span class="kw">IF</span> <span class="var">verified</span> = <span class="kw">FALSE</span> <span class="kw">THEN</span>
+    <span class="kw">SIGNAL SQLSTATE</span> <span class="str">'45000'</span>
+    <span class="kw">SET</span> MESSAGE_TEXT = <span class="str">'Garden must be verified before recording a harvest.'</span>;
+  <span class="kw">END IF</span>;
+<span class="kw">END</span>//</pre>
+
+  <!-- T7 -->
+  <div class="trigger-card">
+    <div class="trigger-card-head">
+      <span>GardenSeasonUniqueness</span>
+      <span class="badge b-red">BEFORE INSERT ON GardenSeason</span>
+    </div>
+    <div class="trigger-card-body">
+      <strong>Purpose:</strong> Enforces the rule that one garden can only be in one active season at a time. Raises an error if a <code>GardenID</code> already has an active <code>SeasonID</code> record in <code>GardenSeason</code>.
+    </div>
+  </div>
+<pre><span class="kw">CREATE TRIGGER</span> <span class="fn">GardenSeasonUniqueness</span>
+<span class="kw">BEFORE INSERT ON</span> GardenSeason
+<span class="kw">FOR EACH ROW</span>
+<span class="kw">BEGIN</span>
+  <span class="kw">IF EXISTS</span> (
+    <span class="kw">SELECT</span> 1 <span class="kw">FROM</span> GardenSeason
+    <span class="kw">WHERE</span> GardenID = NEW.GardenID <span class="kw">AND</span> SeasonID = NEW.SeasonID
+  ) <span class="kw">THEN</span>
+    <span class="kw">SIGNAL SQLSTATE</span> <span class="str">'45000'</span>
+    <span class="kw">SET</span> MESSAGE_TEXT = <span class="str">'Garden already registered for this season.'</span>;
+  <span class="kw">END IF</span>;
+<span class="kw">END</span>//</pre>
+
+  <!-- T8 -->
+  <div class="trigger-card">
+    <div class="trigger-card-head">
+      <span>AfterProcessingRecord</span>
+      <span class="badge b-green">AFTER INSERT ON ProcessingRecord</span>
+    </div>
+    <div class="trigger-card-body">
+      <strong>Purpose:</strong> Calculates <code>LossKg = RawKgIn - ProcessedKgOut</code> and <code>YieldPercent = (ProcessedKgOut / RawKgIn) × 100</code>. Updates these on the newly inserted row and logs to <code>ProcessingAuditLog</code>.
+    </div>
+  </div>
+<pre><span class="kw">CREATE TRIGGER</span> <span class="fn">AfterProcessingRecord</span>
+<span class="kw">AFTER INSERT ON</span> ProcessingRecord
+<span class="kw">FOR EACH ROW</span>
+<span class="kw">BEGIN</span>
+  <span class="kw">UPDATE</span> ProcessingRecord
+  <span class="kw">SET</span>
+    LossKg        = NEW.RawKgIn - NEW.ProcessedKgOut,
+    YieldPercent  = (NEW.ProcessedKgOut / NEW.RawKgIn) * 100
+  <span class="kw">WHERE</span> ProcessID = NEW.ProcessID;
+<span class="kw">END</span>//</pre>
+
+  <!-- T9 -->
+  <div class="trigger-card">
+    <div class="trigger-card-head">
+      <span>AfterExportBatchInsert</span>
+      <span class="badge b-green">AFTER INSERT ON ExportBatch</span>
+    </div>
+    <div class="trigger-card-body">
+      <strong>Purpose:</strong> Calculates <code>TotalUSD = QuantityKg × USDPricePerKg</code> and updates the row. Also updates a <code>SeasonExportSummary</code> table with cumulative export totals by season and grade for ministry reporting.
+    </div>
+  </div>
+
+  <!-- T10 -->
+  <div class="trigger-card">
+    <div class="trigger-card-head">
+      <span>LicenseExpiryCheck</span>
+      <span class="badge b-red">BEFORE INSERT ON Distribution / ExportBatch</span>
+    </div>
+    <div class="trigger-card-body">
+      <strong>Purpose:</strong> Verifies that the related <code>License.ExpiryDate &gt; CURRENT_DATE</code> and <code>License.Status = 'Active'</code>. Blocks distribution or export operations if the license is expired or suspended.
+    </div>
+  </div>
+
+  <!-- T11 -->
+  <div class="trigger-card">
+    <div class="trigger-card-head">
+      <span>ValidateStaffRegion</span>
+      <span class="badge b-red">BEFORE INSERT ON ExtensionWorker</span>
+    </div>
+    <div class="trigger-card-body">
+      <strong>Purpose:</strong> Prevents a staff member from being assigned to their own home region. Traverses <code>Person → Village → Subcounty → District → Region</code> to find the staff member's home region and compares it with the assigned <code>RegionID</code>.
+    </div>
+  </div>
+
+  <!-- T12 -->
+  <div class="trigger-card">
+    <div class="trigger-card-head">
+      <span>FarmCoffeeVarietyUpdate</span>
+      <span class="badge b-green">AFTER INSERT / UPDATE ON Garden</span>
+    </div>
+    <div class="trigger-card-body">
+      <strong>Purpose:</strong> Updates <code>Farm.CoffeeVariety</code> with a concatenated, distinct list of coffee grade names across all gardens belonging to that farm. Keeps the farm-level variety summary always current.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ S6: STORED PROCEDURES ══════════════════════════ -->
+<section id="s6">
+  <h2 class="sec"><span class="n">6</span> Stored Procedures</h2>
+  <p>Stored procedures encapsulate complex multi-step operations, enforce business rules in code, and promote reuse. The system includes <strong>12 stored procedures</strong>.</p>
+
+  <div class="proc-card">
+    <div class="proc-name">RegisterFarmer(IN p_NIN, p_FirstName, p_LastName, p_DOB, p_Phone1, p_VillageID, p_FarmID)</div>
+    Inserts into <strong>Person</strong> then <strong>Farmer</strong> in a single transaction. Returns the new <code>FarmerID</code>. Validates that no existing Farmer or Staff record exists for the NIN (disjoint constraint enforcement).
+  </div>
+<pre><span class="kw">DELIMITER</span> //
+<span class="kw">CREATE PROCEDURE</span> <span class="fn">RegisterFarmer</span>(
+  <span class="kw">IN</span> <span class="var">p_NIN</span> <span class="kw">VARCHAR</span>(20), <span class="kw">IN</span> <span class="var">p_FirstName</span> <span class="kw">VARCHAR</span>(50),
+  <span class="kw">IN</span> <span class="var">p_LastName</span> <span class="kw">VARCHAR</span>(50),  <span class="kw">IN</span> <span class="var">p_VillageID</span> <span class="kw">INT</span>,
+  <span class="kw">IN</span> <span class="var">p_FarmID</span> <span class="kw">INT</span>
+)
+<span class="kw">BEGIN</span>
+  <span class="kw">START TRANSACTION</span>;
+  <span class="kw">INSERT INTO</span> Person (NIN, FirstName, LastName, VillageID)
+  <span class="kw">VALUES</span> (<span class="var">p_NIN</span>, <span class="var">p_FirstName</span>, <span class="var">p_LastName</span>, <span class="var">p_VillageID</span>);
+
+  <span class="kw">INSERT INTO</span> Farmer (NIN, FarmID) <span class="kw">VALUES</span> (<span class="var">p_NIN</span>, <span class="var">p_FarmID</span>);
+  <span class="kw">COMMIT</span>;
+  <span class="kw">SELECT LAST_INSERT_ID</span>() <span class="kw">AS</span> NewFarmerID;
+<span class="kw">END</span>//
+<span class="kw">DELIMITER</span> ;</pre>
+
+  <div class="proc-card">
+    <div class="proc-name">RecordHarvest(IN p_GardenID, p_SeasonID, p_DateHarvested, p_HarvestedKg, p_ProductionCost)</div>
+    Checks that <code>GardenSeason</code> exists (garden enrolled in that season) and <code>Garden.IsVerified = TRUE</code> before inserting a <code>ProductionRecord</code>. Returns <code>ProdID</code>.
+  </div>
+
+  <div class="proc-card">
+    <div class="proc-name">DistributeToGarden(IN p_FarmerID, p_GardenID, p_WorkerID, p_Items JSON)</div>
+    Creates a <code>Distribution</code> plus multiple <code>DistributionItem</code> records in one call. Accepts a JSON array of <code>{InputID, Quantity}</code> pairs. Validates garden ownership and stock levels for <em>all</em> items before any insert (all-or-nothing). Trigger then deducts stock.
+  </div>
+
+  <div class="proc-card">
+    <div class="proc-name">ApproveResourceRequest(IN p_RequestID, p_ApproverStaffID)</div>
+    Updates <code>ResourceRequest.Status</code> to <code>'Approved'</code>, then internally calls <code>DistributeToGarden</code> to fulfil the request. Both operations are wrapped in one transaction — if distribution fails, the approval is rolled back.
+  </div>
+
+  <div class="proc-card">
+    <div class="proc-name">RecordProcessing(IN p_GardenID, p_ProcessorID, p_SeasonID, p_RawKgIn, p_ProcessedKgOut, p_ProcessType)</div>
+    Inserts a <code>ProcessingRecord</code>. Validates that the <code>ProcessorID</code> holds a valid, non-expired License. Trigger then calculates <code>LossKg</code> and <code>YieldPercent</code> automatically.
+  </div>
+
+  <div class="proc-card">
+    <div class="proc-name">CreateExportBatch(IN p_ExporterID, p_ProcessID, p_SeasonID, p_QuantityKg, p_DestCountry, p_USDPricePerKg)</div>
+    Inserts an <code>ExportBatch</code>. Validates that <code>ExporterID</code> has an active UCDA license and that <code>QuantityKg ≤ ProcessingRecord.ProcessedKgOut (remaining)</code>. Trigger calculates <code>TotalUSD</code>.
+  </div>
+
+  <div class="proc-card">
+    <div class="proc-name">VerifyGarden(IN p_GardenID, p_WorkerID)</div>
+    Sets <code>Garden.IsVerified = TRUE</code>, records the verifying <code>WorkerID</code>, and creates a <code>FarmVisit</code> record for the verification event. Wrapped in a transaction.
+  </div>
+
+  <div class="proc-card">
+    <div class="proc-name">EnrolFarmerInScheme(IN p_FarmerID, p_SchemeID)</div>
+    Inserts into <code>SchemeEnrolment</code>. Checks the scheme is still active (<code>EndDate &gt; NOW()</code>) and that the farmer is not already enrolled. Optionally triggers an initial distribution if the scheme provides inputs on enrolment.
+  </div>
+
+  <div class="proc-card">
+    <div class="proc-name">GetFarmerProductionReport(IN p_FarmerID) → ResultSet</div>
+    Returns all <code>ProductionRecords</code>, <code>SaleRecords</code>, and <code>ProcessingRecords</code> for a given farmer across all seasons and gardens. Includes totals and grade breakdown for ministry reporting.
+  </div>
+
+  <div class="proc-card">
+    <div class="proc-name">GetSeasonExportSummary(IN p_SeasonID) → ResultSet</div>
+    Returns total KG harvested, processed, sold locally, and exported per season. Includes yield loss percentage and average export price. Primary tool for ministry-level reporting.
+  </div>
+
+  <div class="proc-card">
+    <div class="proc-name">TransferGardenOwnership(IN p_GardenID, p_NewFarmID)</div>
+    Updates <code>Garden.FarmID</code>, inserts a <code>PlotHistory</code> record, and recalculates acreage on both the old and new Farm. Wrapped in a transaction.
+  </div>
+
+  <div class="proc-card">
+    <div class="proc-name">RegisterGarden(IN p_FarmID, p_GPS, p_VillageID, p_Acreage, p_GradeID, p_PlantingDate, p_NumberOfTrees)</div>
+    Creates a Garden record under a Farm. Validates that <code>FarmID</code> belongs to the calling FarmerID. The <code>AfterGardenInsertUpdate</code> trigger automatically recalculates Farm.Acreage.
+  </div>
+</section>
+
+<!-- ══════════════════════════ S7: TRANSACTIONS ══════════════════════════ -->
+<section id="s7">
+  <h2 class="sec"><span class="n">7</span> Transaction Management</h2>
+  <p>All multi-step data operations are wrapped in explicit <code>BEGIN / COMMIT / ROLLBACK</code> transactions to guarantee atomicity. If any step fails, the entire operation is reversed.</p>
+
+  <table>
+    <tr><th>Transaction</th><th>Steps</th><th>Ensures</th></tr>
+    <tr>
+      <td><strong>New Farmer Registration</strong></td>
+      <td>INSERT Person → INSERT Farmer → INSERT Farm → INSERT Garden → INSERT GardenSeason → COMMIT</td>
+      <td>A new farmer must have at least one farm and garden. No orphaned Person records.</td>
+    </tr>
+    <tr>
+      <td><strong>Harvest to Sale</strong></td>
+      <td>INSERT ProductionRecord → INSERT ProcessingRecord → INSERT SaleRecord → COMMIT</td>
+      <td>A harvest is never partially recorded across the supply chain.</td>
+    </tr>
+    <tr>
+      <td><strong>Approve &amp; Fulfil Resource Request</strong></td>
+      <td>UPDATE ResourceRequest (Approved) → INSERT Distribution → INSERT DistributionItem(s) → deduct stock → UPDATE ResourceRequest (Fulfilled) → COMMIT</td>
+      <td>Approval and distribution are atomic — approval never exists without fulfilment or vice versa.</td>
+    </tr>
+    <tr>
+      <td><strong>Export Batch Creation</strong></td>
+      <td>Validate ProcessingRecord stock → INSERT ExportBatch → UPDATE remaining stock → INSERT ExportAuditLog → COMMIT</td>
+      <td>Cannot export more than was processed.</td>
+    </tr>
+    <tr>
+      <td><strong>Cooperative Formation</strong></td>
+      <td>INSERT Cooperative → INSERT CooperativeMember for each farmer → UPDATE Farm linkages → COMMIT</td>
+      <td>Entire cooperative creation is atomic.</td>
+    </tr>
+    <tr>
+      <td><strong>Season Closure &amp; Rollover</strong></td>
+      <td>UPDATE Season.EndDate → verify all GardenSeason records closed → INSERT new Season → COMMIT</td>
+      <td>Prevents two open seasons simultaneously across the system.</td>
+    </tr>
+    <tr>
+      <td><strong>Bulk Scheme Distribution</strong></td>
+      <td>For each enrolled farmer → call DistributeToGarden → if any fails stock check → ROLLBACK ALL → else COMMIT</td>
+      <td>Ministry-wide input distribution is all-or-nothing across all enrolled farmers.</td>
+    </tr>
+    <tr>
+      <td><strong>Garden Split (Land Heritage)</strong></td>
+      <td>UPDATE old Garden status → INSERT two new Gardens → INSERT PlotHistory → trigger recalculates Farm.Acreage → COMMIT</td>
+      <td>Land subdivision is fully tracked historically.</td>
+    </tr>
+  </table>
+</section>
+
+<!-- ══════════════════════════ S8: VIEWS ══════════════════════════ -->
+<section id="s8">
+  <h2 class="sec"><span class="n">8</span> Views</h2>
+  <p>Views provide pre-built, read-only query abstractions for ministry reporting without exposing raw table structure.</p>
+
+  <h3 class="sub">Ministry_Regional_Production</h3>
+  <p>Shows total KG harvested and distinct active farmers per District per Season. Used by ministry administrators for regional production oversight.</p>
+<pre><span class="kw">CREATE VIEW</span> <span class="fn">Ministry_Regional_Production</span> <span class="kw">AS</span>
+<span class="kw">SELECT</span>
+  d.Name            <span class="kw">AS</span> District,
+  s.Name            <span class="kw">AS</span> Season,
+  <span class="fn">SUM</span>(pr.HarvestedKg) <span class="kw">AS</span> Total_Kgs,
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> f.FarmerID) <span class="kw">AS</span> Active_Farmers
+<span class="kw">FROM</span> ProductionRecord pr
+<span class="kw">JOIN</span> Season s    <span class="kw">ON</span> pr.SeasonID  = s.SeasonID
+<span class="kw">JOIN</span> Garden g    <span class="kw">ON</span> pr.GardenID  = g.GardenID
+<span class="kw">JOIN</span> Farm farm   <span class="kw">ON</span> g.FarmID     = farm.FarmID
+<span class="kw">JOIN</span> Farmer f    <span class="kw">ON</span> farm.FarmID  = f.FarmID
+<span class="kw">JOIN</span> Person p    <span class="kw">ON</span> f.NIN        = p.NIN
+<span class="kw">JOIN</span> Village v   <span class="kw">ON</span> p.VillageID  = v.VillageID
+<span class="kw">JOIN</span> Subcounty sc <span class="kw">ON</span> v.SubcountyID = sc.SubcountyID
+<span class="kw">JOIN</span> District d  <span class="kw">ON</span> sc.DistrictID = d.DistrictID
+<span class="kw">GROUP BY</span> d.Name, s.Name;</pre>
+
+  <table>
+    <tr><th>View</th><th>Purpose</th></tr>
+    <tr><td><code>Ministry_Regional_Production</code></td><td>Regional harvest totals and farmer counts per season</td></tr>
+    <tr><td><code>FarmerSupplyChain</code></td><td>End-to-end trace for each farmer: garden → harvest → processing → export</td></tr>
+    <tr><td><code>ActiveDistributions</code></td><td>All distributions with DeliveryStatus ≠ 'Delivered'</td></tr>
+    <tr><td><code>LicenseExpiryAlert</code></td><td>All licenses expiring within 30 days</td></tr>
+    <tr><td><code>SeasonExportSummary</code></td><td>Cumulative export KG, USD value, and average price per grade per season</td></tr>
+    <tr><td><code>ExtWorkerPerformance</code></td><td>Visit count, gardens verified, and requests raised per extension worker</td></tr>
+  </table>
+</section>
+
+<!-- ══════════════════════════ S9: SECURITY ══════════════════════════ -->
+<section id="s9">
+  <h2 class="sec"><span class="n">9</span> Security &amp; Access Control</h2>
+
+  <p>Security is implemented through MySQL's native user account system combined with role-based privilege grants. Passwords are stored as <code>bcrypt</code> hashes in the <code>SystemUser</code> table.</p>
+
+  <h3 class="sub">User Roles &amp; Privileges</h3>
+  <table>
+    <tr><th>Role</th><th>MySQL User</th><th>Granted Privileges</th><th>Restricted Tables</th></tr>
+    <tr>
+      <td><strong>Ministry Admin</strong></td>
+      <td><code>'admin'@'localhost'</code></td>
+      <td>ALL PRIVILEGES on <code>agri_db.*</code></td>
+      <td>None — full access</td>
+    </tr>
+    <tr>
+      <td><strong>Database Manager</strong></td>
+      <td><code>'db_manager'@'localhost'</code></td>
+      <td>SELECT, INSERT, UPDATE, DELETE on all tables; CREATE/DROP procedures and views</td>
+      <td>Cannot DROP tables</td>
+    </tr>
+    <tr>
+      <td><strong>Extension Worker</strong></td>
+      <td><code>'ext_worker'@'localhost'</code></td>
+      <td>SELECT on all tables; INSERT on FarmVisit, ResourceRequest; UPDATE on Garden (IsVerified only)</td>
+      <td>No access to License, ExportBatch, SystemUser, Distribution financials</td>
+    </tr>
+    <tr>
+      <td><strong>Farmer (Self-Service)</strong></td>
+      <td><code>'farmer_user'@'%'</code></td>
+      <td>SELECT on own ProductionRecord, SaleRecord, Distribution (via views filtered by FarmerID)</td>
+      <td>Cannot see other farmers' data; no access to Staff, SystemUser, License</td>
+    </tr>
+    <tr>
+      <td><strong>Read-Only Reporter</strong></td>
+      <td><code>'reporter'@'localhost'</code></td>
+      <td>SELECT on views only (Ministry_Regional_Production, SeasonExportSummary)</td>
+      <td>No base table access</td>
+    </tr>
+  </table>
+
+<pre><span class="cmt">-- Create extension worker user</span>
+<span class="kw">CREATE USER</span> <span class="str">'ext_worker'</span>@<span class="str">'localhost'</span>
+  <span class="kw">IDENTIFIED BY</span> <span class="str">'StrongPassword#2026'</span>;
+
+<span class="kw">GRANT SELECT ON</span> agri_db.* <span class="kw">TO</span> <span class="str">'ext_worker'</span>@<span class="str">'localhost'</span>;
+<span class="kw">GRANT INSERT ON</span> agri_db.FarmVisit <span class="kw">TO</span> <span class="str">'ext_worker'</span>@<span class="str">'localhost'</span>;
+<span class="kw">GRANT INSERT ON</span> agri_db.ResourceRequest <span class="kw">TO</span> <span class="str">'ext_worker'</span>@<span class="str">'localhost'</span>;
+<span class="kw">GRANT UPDATE</span> (IsVerified) <span class="kw">ON</span> agri_db.Garden <span class="kw">TO</span> <span class="str">'ext_worker'</span>@<span class="str">'localhost'</span>;
+<span class="kw">FLUSH PRIVILEGES</span>;</pre>
+
+  <h3 class="sub">Additional Security Measures</h3>
+  <div class="callout warn">
+    <strong>Authentication:</strong> <code>SystemUser.PasswordHash</code> stores bcrypt-hashed passwords. Raw passwords are never stored or logged in the database. Application layer handles authentication before issuing SQL connections.
+  </div>
+  <div class="callout info">
+    <strong>Views as Security Layer:</strong> Farmer-facing queries use views filtered by <code>FarmerID</code> or <code>NIN</code>, ensuring each farmer sees only their own data. The base tables are not directly accessible to farmer user accounts.
+  </div>
+</section>
+
+<!-- ══════════════════════════ S10: BACKUP ══════════════════════════ -->
+<section id="s10">
+  <h2 class="sec"><span class="n">10</span> Backup &amp; Recovery Strategy</h2>
+
+  <h3 class="sub">Backup Methods</h3>
+  <table>
+    <tr><th>Method</th><th>Tool</th><th>Frequency</th><th>Output</th></tr>
+    <tr>
+      <td><strong>Full Logical Dump</strong></td>
+      <td><code>mysqldump</code></td>
+      <td>Daily (end of day)</td>
+      <td><code>agri_db_YYYYMMDD.sql</code> — complete DDL + data</td>
+    </tr>
+    <tr>
+      <td><strong>Structure-Only Dump</strong></td>
+      <td><code>mysqldump --no-data</code></td>
+      <td>After any schema change</td>
+      <td><code>agri_db_schema.sql</code> — DDL only for version control</td>
+    </tr>
+    <tr>
+      <td><strong>Incremental Backup</strong></td>
+      <td>MySQL Binary Log</td>
+      <td>Continuous (binlog enabled)</td>
+      <td>Binary log files for point-in-time recovery</td>
+    </tr>
+    <tr>
+      <td><strong>Export to CSV</strong></td>
+      <td><code>SELECT INTO OUTFILE</code></td>
+      <td>Weekly — production data only</td>
+      <td>Human-readable data for offline archival</td>
+    </tr>
+  </table>
+
+  <h3 class="sub">Backup Commands</h3>
+<pre><span class="cmt">-- Full logical backup (run from terminal)</span>
+mysqldump -u admin -p agri_db &gt; agri_db_backup_$(date +%Y%m%d).sql
+
+<span class="cmt">-- Structure only (for schema version control)</span>
+mysqldump -u admin -p --no-data agri_db &gt; agri_db_schema.sql
+
+<span class="cmt">-- Restore from dump file</span>
+mysql -u admin -p agri_db &lt; agri_db_backup_20260412.sql</pre>
+
+  <h3 class="sub">Recovery Procedure</h3>
+  <table>
+    <tr><th>Scenario</th><th>Recovery Action</th><th>Expected RTO</th></tr>
+    <tr><td>Accidental row deletion</td><td>Restore from same-day dump; replay binary log to point-in-time</td><td>&lt; 30 minutes</td></tr>
+    <tr><td>Full database corruption</td><td>Restore latest full dump; replay binary log since last dump</td><td>&lt; 2 hours</td></tr>
+    <tr><td>Schema change error</td><td>Roll back using structure-only backup; re-apply data migr.</td><td>&lt; 1 hour</td></tr>
+    <tr><td>Server failure</td><td>Restore dump to new MySQL instance; update connection strings</td><td>&lt; 4 hours</td></tr>
+  </table>
+
+  <div class="callout success">
+    <strong>Best Practice:</strong> All backup files are stored in a separate, off-site location (e.g. USB drive or cloud storage). Backup integrity is verified monthly by running a test restore to a development instance and executing <code>CHECK TABLE</code> on all tables.
+  </div>
+</section>
+
+<footer>
+  Agricultural Services Database &mdash; Technical Documentation &nbsp;|&nbsp; CSC2209 Database Programming &nbsp;|&nbsp; Uganda Christian University &nbsp;|&nbsp; Easter 2026 Semester
+</footer>
+
+    </div><!-- /content-inner -->
+  </div><!-- /content -->
+</div><!-- /doc-layout -->
+
+<script>
+/* ── Active sidebar highlighting via IntersectionObserver ── */
+const sections  = document.querySelectorAll('section[id]');
+const navItems  = document.querySelectorAll('.nav-item[data-section]');
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navItems.forEach(link => {
+        const active = link.dataset.section === entry.target.id;
+        link.classList.toggle('active', active);
+      });
+    }
+  });
+}, {
+  root: document.getElementById('content'),
+  rootMargin: '-20% 0px -60% 0px',
+  threshold: 0
+});
+
+sections.forEach(s => observer.observe(s));
+
+/* ── Smooth scroll nav links into the scrollable content div ── */
+document.querySelectorAll('a[href^="#"]').forEach(link => {
+  link.addEventListener('click', e => {
+    const id = link.getAttribute('href').slice(1);
+    const target = document.getElementById(id);
+    if (!target) return;
+    e.preventDefault();
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+</script>
+</body>
+</html>
+

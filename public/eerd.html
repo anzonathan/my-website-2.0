@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agricultural Services — EERD</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Fira+Code:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f5f5;
+  --bg2: #ffffff;
+  --bg3: #ffffff;
+  --border: #d0d0d0;
+  --border2: #b0b0b0;
+  --text: #333333;
+  --text-dim: #666666;
+  --text-muted: #999999;
+  --header-bg: #dae8fc;
+  --header-border: #6c8ebf;
+  --header-text: #000000;
+
+  --green: #d5e8d4;
+  --green-border: #82b366;
+  --blue: #dae8fc;
+  --blue-border: #6c8ebf;
+  --purple: #e1d5e7;
+  --purple-border: #9673a6;
+  --orange: #ffe6cc;
+  --orange-border: #d79b00;
+  --red: #f8cecc;
+  --red-border: #b85450;
+  --yellow: #fff2cc;
+  --yellow-border: #d6b656;
+  --grey: #f5f5f5;
+  --grey-border: #666666;
+
+  --people: var(--purple-border);
+  --farm: var(--green-border);
+  --prod: var(--orange-border);
+  --dist: var(--red-border);
+  --export: var(--blue-border);
+  --admin: var(--grey-border);
+  --support: #b5739d;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--text);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+#app {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── FLOATING TOOLBAR PANEL ── */
+#toolbar {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 1000;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid #d0d0d0;
+  border-radius: 10px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.14);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 180px;
+  max-width: 200px;
+  transition: opacity 0.2s, transform 0.2s;
+}
+#toolbar.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-8px);
+}
+
+/* mini show button when hidden */
+#show-btn {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 1001;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(8px);
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.13);
+  padding: 7px 14px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: #444;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s;
+}
+#show-btn:hover { background: #f0f0f0; }
+#show-btn.visible { display: flex; }
+
+.toolbar-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #222;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.toolbar-title .hide-btn {
+  font-size: 11px;
+  font-weight: 500;
+  color: #888;
+  cursor: pointer;
+  padding: 1px 4px;
+  border-radius: 3px;
+  line-height: 1;
+}
+.toolbar-title .hide-btn:hover { background: #eee; color: #444; }
+
+.toolbar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.toolbar-section-label {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #aaa;
+}
+.toolbar-row {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.layer-btn {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all .1s;
+  flex: 1 1 auto;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.sep { display: none; } /* no longer needed */
+
+.tool-btn {
+  font-size: 11px;
+  padding: 4px 0;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid #cccccc;
+  background: #ffffff;
+  color: #333333;
+  flex: 1;
+  text-align: center;
+}
+.tool-btn:hover { background: #eeeeee; }
+
+/* Layout toggle pill */
+.layout-toggle {
+  display: flex;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  overflow: hidden;
+}
+.layout-toggle span {
+  flex: 1;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 0;
+  cursor: pointer;
+  color: #666;
+  transition: background 0.15s, color 0.15s;
+}
+.layout-toggle span.active {
+  background: #1a5c32;
+  color: #fff;
+}
+
+/* ── CANVAS (now fills full viewport) ── */
+#app { position: relative; width: 100vw; height: 100vh; }
+#canvas-wrap {
+  position: fixed;
+  inset: 0;
+  overflow: auto;
+  cursor: grab;
+  background-image: 
+    linear-gradient(to right, #e5e5e5 1px, transparent 1px),
+    linear-gradient(to bottom, #e5e5e5 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+#canvas-wrap:active { cursor: grabbing; }
+
+#canvas {
+  position: relative;
+  transform-origin: 0 0;
+}
+
+svg#svg-layer {
+  position: absolute;
+  top: 0; left: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* ── ENTITY CARDS ── */
+.entity {
+  position: absolute;
+  width: 220px;
+  background: #ffffff;
+  border: 1px solid #808080;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+  font-family: Helvetica, Arial, sans-serif;
+  z-index: 10;
+}
+.entity:hover {
+  box-shadow: 4px 4px 8px rgba(0,0,0,0.2);
+}
+
+.entity-header {
+  padding: 8px;
+  border-bottom: 1px solid #808080;
+  text-align: center;
+  font-weight: bold;
+  font-size: 12px;
+  cursor: move;
+}
+
+.entity-layer-dot {
+  display: none;
+}
+
+.entity-name {
+  color: #000000;
+}
+
+.entity-tag {
+  font-size: 10px;
+  font-style: italic;
+  font-weight: normal;
+  display: block;
+  margin-top: 2px;
+}
+
+.entity-body {
+  padding: 0;
+}
+
+.entity-field {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #eeeeee;
+  font-size: 11px;
+  min-height: 24px;
+}
+.entity-field:last-child { border-bottom: none; }
+
+.field-gutter {
+  width: 24px;
+  min-width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid #eeeeee;
+  font-size: 9px;
+  font-weight: bold;
+}
+
+.field-name {
+  padding: 4px 8px;
+  flex: 1;
+  color: #000000;
+}
+
+.field-type {
+  padding: 4px 8px;
+  color: #666666;
+  font-size: 10px;
+}
+
+.badge-pk  { color: #000; }
+.badge-fk  { color: #666; }
+
+/* ── TOOLTIP ── */
+#tooltip {
+  position: fixed;
+  background: #ffffcc;
+  border: 1px solid #808080;
+  padding: 6px 10px;
+  font-size: 11px;
+  color: #000;
+  max-width: 250px;
+  pointer-events: none;
+  display: none;
+  z-index: 9999;
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+#tooltip b { display: block; border-bottom: 1px solid #ccc; margin-bottom: 4px; padding-bottom: 2px; }
+
+/* ── LEGEND ── */
+#legend {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: white;
+  border: 1px solid #ccc;
+  padding: 12px;
+  font-size: 11px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  z-index: 50;
+}
+.leg-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.leg-dot  { width: 12px; height: 12px; border: 1px solid rgba(0,0,0,0.2); }
+
+/* zoom indicator */
+#zoom-indicator {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: white;
+  border: 1px solid #ccc;
+  padding: 4px 12px;
+  font-size: 12px;
+  z-index: 50;
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- Floating toolbar -->
+  <div id="toolbar">
+    <div class="toolbar-title">
+      <span>Agri_DB EERD</span>
+      <span class="hide-btn" onclick="toggleToolbar()" title="Hide">✕</span>
+    </div>
+
+    <div class="toolbar-section">
+      <div class="toolbar-section-label">Layout</div>
+      <div class="layout-toggle" id="layout-toggle">
+        <span class="active" id="btn-organized" onclick="setLayout('organized')">Organized</span>
+        <span id="btn-flexible" onclick="setLayout('flexible')">Flexible</span>
+      </div>
+    </div>
+
+    <div class="toolbar-section">
+      <div class="toolbar-section-label">Layers</div>
+      <div class="toolbar-row" id="layer-btns"></div>
+    </div>
+
+    <div class="toolbar-section">
+      <div class="toolbar-section-label">View</div>
+      <div class="toolbar-row">
+        <div class="tool-btn" onclick="zoomIn()">＋</div>
+        <div class="tool-btn" onclick="zoomOut()">－</div>
+        <div class="tool-btn" onclick="resetView()">⊙ Reset</div>
+      </div>
+      <div class="toolbar-row">
+        <div class="tool-btn" onclick="toggleAll()">Toggle All</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mini show button (when toolbar hidden) -->
+  <div id="show-btn" onclick="toggleToolbar()">☰ EERD</div>
+
+  <div id="canvas-wrap">
+    <div id="canvas">
+      <svg id="svg-layer"></svg>
+    </div>
+    <div id="legend">
+      <div class="leg-row"><div class="leg-dot" style="background:#e1d5e7"></div> People</div>
+      <div class="leg-row"><div class="leg-dot" style="background:#d5e8d4"></div> Farm / Garden</div>
+      <div class="leg-row"><div class="leg-dot" style="background:#ffe6cc"></div> Production</div>
+      <div class="leg-row"><div class="leg-dot" style="background:#f8cecc"></div> Distribution</div>
+      <div class="leg-row"><div class="leg-dot" style="background:#dae8fc"></div> Export</div>
+      <div class="leg-row"><div class="leg-dot" style="background:#f5f5f5"></div> Admin</div>
+      <div class="leg-row"><div class="leg-dot" style="background:#ffe6ff"></div> Support</div>
+      <div style="border-top:1px solid #ccc;margin:8px 0"></div>
+      <div class="leg-row"><b>Labels inside diamonds</b></div>
+      <div class="leg-row" style="gap:4px">
+        <span style="font-size:10px">○ = Overlapping &nbsp; ● = Disjoint</span>
+      </div>
+    </div>
+    <div id="zoom-indicator">100%</div>
+  </div>
+</div>
+
+<div id="tooltip"></div>
+
+<script>
+const LAYER_COLORS = {
+  People:'#e1d5e7', Farm:'#d5e8d4', Production:'#ffe6cc',
+  Distribution:'#f8cecc', Export:'#dae8fc', Admin:'#f5f5f5', Support:'#ffe6ff'
+};
+const LAYER_BORDERS = {
+  People:'#9673a6', Farm:'#82b366', Production:'#d79b00',
+  Distribution:'#b85450', Export:'#6c8ebf', Admin:'#666666', Support:'#b5739d'
+};
+
+// Spread-out layout: column gap ~500px, row gap ~480px
+const ENTITIES = [
+  /* ── PEOPLE ── */
+  { id:'Person',     layer:'People',  x:1380, y:60,
+    note:'Superclass for all human actors. Specializes into Farmer, Staff, SystemUser.',
+    tag:'<<supertype>>',
+    fields:[
+      {n:'NIN',         t:'varchar(20)',  pk:true},
+      {n:'FirstName',   t:'varchar(50)'},
+      {n:'LastName',    t:'varchar(50)'},
+      {n:'Sex',         t:'enum'},
+      {n:'DOB',         t:'date'},
+      {n:'Phone1',      t:'varchar(15)'},
+      {n:'Phone2',      t:'varchar(15)'},
+      {n:'VillageID',   t:'int',         fk:true},
+    ]},
+
+  { id:'Farmer',     layer:'People',  x:820,  y:560,
+    note:'Subtype of Person. DISJOINT from Staff. Registers and owns farms.',
+    tag:'<<subtype>>',
+    fields:[
+      {n:'FarmerID',    t:'int',         pk:true},
+      {n:'NIN',         t:'varchar(20)', fk:true},
+      {n:'FarmID',      t:'int',         fk:true},
+    ]},
+
+  { id:'SystemUser', layer:'People',  x:1380, y:560,
+    note:'OVERLAPPING — any Person subtype can have system login credentials.',
+    tag:'<<subtype>>',
+    fields:[
+      {n:'UserID',       t:'int',         pk:true},
+      {n:'NIN',          t:'varchar(20)', fk:true},
+      {n:'Username',     t:'varchar(50)'},
+      {n:'PasswordHash', t:'varchar(255)'},
+      {n:'Role',         t:'enum'},
+      {n:'IsActive',     t:'boolean'},
+    ]},
+
+  { id:'Staff',      layer:'People',  x:1940, y:560,
+    note:'Subtype of Person. DISJOINT from Farmer. Ministry employees.',
+    tag:'<<subtype>>',
+    fields:[
+      {n:'StaffID',     t:'int',         pk:true},
+      {n:'NIN',         t:'varchar(20)', fk:true},
+      {n:'Role',        t:'varchar(60)'},
+    ]},
+
+  { id:'ExtWorker',  layer:'People',  x:1700, y:1060,
+    note:'Subtype of Staff. DISJOINT from DBManager. Field agents visiting farms.',
+    tag:'<<subtype>>',
+    fields:[
+      {n:'WorkerID',    t:'int',         pk:true},
+      {n:'StaffID',     t:'int',         fk:true},
+      {n:'OfficeID',    t:'int',         fk:true},
+      {n:'RegionID',    t:'int',         fk:true},
+    ]},
+
+  { id:'DBManager',  layer:'People',  x:2260, y:1060,
+    note:'Subtype of Staff. DISJOINT from ExtWorker. Database administrators.',
+    tag:'<<subtype>>',
+    fields:[
+      {n:'ManagerID',   t:'int',         pk:true},
+      {n:'StaffID',     t:'int',         fk:true},
+      {n:'AccessLevel', t:'enum'},
+    ]},
+
+  /* ── FARM / GARDEN ── */
+  { id:'Farm',       layer:'Farm',    x:60,   y:1060,
+    note:'Owned by Farmer(s). Acreage is trigger-computed from child Gardens.',
+    fields:[
+      {n:'FarmID',      t:'int',         pk:true},
+      {n:'Acreage',     t:'decimal',     trg:true},
+      {n:'IsGroup',     t:'boolean',     trg:true},
+      {n:'CoffeeVariety',t:'text',       trg:true},
+      {n:'YearPlanted', t:'year'},
+      {n:'LicenseID',   t:'int',         fk:true},
+    ]},
+
+  { id:'Garden',     layer:'Farm',    x:60,   y:1660,
+    note:'Physical plot. Must be verified before harvests recorded.',
+    fields:[
+      {n:'GardenID',    t:'int',         pk:true},
+      {n:'FarmID',      t:'int',         fk:true},
+      {n:'GPS',         t:'point'},
+      {n:'VillageID',   t:'int',         fk:true},
+      {n:'Acreage',     t:'decimal'},
+      {n:'GradeID',     t:'int',         fk:true},
+      {n:'OwnershipType',t:'enum'},
+      {n:'IsVerified',  t:'boolean'},
+      {n:'PlantingDate',t:'date'},
+      {n:'NumberOfTrees',t:'int'},
+    ]},
+
+  { id:'GardenSeason',layer:'Farm',   x:60,   y:2400,
+    note:'Bridge enforcing: one garden → one active season.',
+    tag:'<<bridge>>',
+    fields:[
+      {n:'GardenSznID', t:'int',         pk:true},
+      {n:'GardenID',    t:'int',         fk:true},
+      {n:'SeasonID',    t:'int',         fk:true},
+    ]},
+
+  { id:'Cooperative', layer:'Farm',   x:620,  y:1060,
+    note:'Group of farmers. M:N with Farmer via CoopMember.',
+    fields:[
+      {n:'RegNo',       t:'varchar(20)', pk:true},
+      {n:'Name',        t:'varchar(150)'},
+      {n:'RegDate',     t:'date'},
+      {n:'DistrictID',  t:'int',         fk:true},
+      {n:'ContactNIN',  t:'varchar(20)', fk:true},
+    ]},
+
+  { id:'CoopMember',  layer:'Farm',   x:620,  y:1660,
+    note:'Bridge resolving M:N between Cooperative and Farmer.',
+    tag:'<<bridge>>',
+    fields:[
+      {n:'CoopRegNo',   t:'varchar(20)', fk:true},
+      {n:'FarmerID',    t:'int',         fk:true},
+      {n:'JoinDate',    t:'date'},
+      {n:'MemberRole',  t:'varchar(80)'},
+    ]},
+
+  /* ── PRODUCTION ── */
+  { id:'Season',     layer:'Production', x:1180, y:1660,
+    note:'A harvest period. First or Second season per year.',
+    fields:[
+      {n:'SeasonID',    t:'int',         pk:true},
+      {n:'SeasonName',  t:'varchar(60)'},
+      {n:'StartDate',   t:'date'},
+      {n:'EndDate',     t:'date'},
+      {n:'SeasonOrder', t:'enum'},
+    ]},
+
+  { id:'ProductionRecord', layer:'Production', x:1180, y:2200,
+    note:'Records one harvest event for a garden in a season.',
+    fields:[
+      {n:'ProdID',      t:'int',         pk:true},
+      {n:'GardenID',    t:'int',         fk:true},
+      {n:'SeasonID',    t:'int',         fk:true},
+      {n:'DateHarvested',t:'date'},
+      {n:'HarvestedKg', t:'decimal'},
+      {n:'ProductionCost',t:'decimal'},
+    ]},
+
+  { id:'SaleRecord',  layer:'Production', x:1180, y:2880,
+    note:'Records sale of harvested coffee.',
+    fields:[
+      {n:'SaleID',      t:'int',         pk:true},
+      {n:'ProdID',      t:'int',         fk:true},
+      {n:'DateSold',    t:'date'},
+      {n:'QuantityKg',  t:'decimal'},
+      {n:'UnitPrice',   t:'decimal'},
+      {n:'TotalAmount', t:'decimal',     gen:true},
+      {n:'PaymentStatus',t:'enum'},
+    ]},
+
+  { id:'CoffeeType',  layer:'Production', x:1740, y:1660,
+    note:'Arabica (8×8ft, 680/acre) or Robusta (10×10ft, 435/acre).',
+    fields:[
+      {n:'TypeID',      t:'int',         pk:true},
+      {n:'TypeName',    t:'enum'},
+      {n:'TreeSpacing', t:'varchar(20)'},
+      {n:'PlantsPerAcre',t:'int'},
+      {n:'AltitudeRange',t:'varchar(40)'},
+    ]},
+
+  { id:'CoffeeGrade', layer:'Production', x:1740, y:2200,
+    note:'Kiboko, FAQ, Screen 18 (Robusta); Bugisu AA/A/B (Arabica).',
+    fields:[
+      {n:'GradeID',     t:'int',         pk:true},
+      {n:'TypeID',      t:'int',         fk:true},
+      {n:'GradeName',   t:'varchar(60)'},
+      {n:'MinPriceUGX', t:'decimal'},
+      {n:'MaxPriceUGX', t:'decimal'},
+    ]},
+
+  { id:'MarketPrice', layer:'Production', x:1740, y:2880,
+    note:'Daily price per grade per region.',
+    fields:[
+      {n:'PriceID',     t:'int',         pk:true},
+      {n:'GradeID',     t:'int',         fk:true},
+      {n:'RegionID',    t:'int',         fk:true},
+      {n:'PricePerKg',  t:'decimal'},
+      {n:'PriceDate',   t:'date'},
+      {n:'Source',      t:'enum'},
+    ]},
+
+  /* ── DISTRIBUTION ── */
+  { id:'Distribution', layer:'Distribution', x:60,  y:3060,
+    note:'Distribution event to a specific garden.',
+    fields:[
+      {n:'DistribID',   t:'int',         pk:true},
+      {n:'FarmerID',    t:'int',         fk:true},
+      {n:'GardenID',    t:'int',         fk:true},
+      {n:'WorkerID',    t:'int',         fk:true},
+      {n:'DateDistributed',t:'date'},
+      {n:'DeliveryStatus',t:'enum'},
+      {n:'DispatchTime',t:'datetime',    trg:true},
+      {n:'QualityCert', t:'boolean'},
+    ]},
+
+  { id:'DistribItem',  layer:'Distribution', x:620, y:3060,
+    note:'Bridge: one distribution contains many input types.',
+    tag:'<<bridge>>',
+    fields:[
+      {n:'ItemID',      t:'int',         pk:true},
+      {n:'DistribID',   t:'int',         fk:true},
+      {n:'InputID',     t:'int',         fk:true},
+      {n:'QuantityGiven',t:'decimal'},
+    ]},
+
+  { id:'Inputs',       layer:'Distribution', x:620, y:3620,
+    note:'Supertype for all agricultural inputs.',
+    tag:'<<supertype>>',
+    fields:[
+      {n:'InputID',     t:'int',         pk:true},
+      {n:'Name',        t:'varchar(100)'},
+      {n:'Qty',         t:'decimal'},
+      {n:'CategoryID',  t:'int',         fk:true},
+      {n:'UnitOfMeasure',t:'enum'},
+      {n:'ReorderLevel',t:'decimal'},
+    ]},
+
+  { id:'InputInventory',layer:'Distribution', x:300, y:4200,
+    note:'DISJOINT subtype of Inputs. Items currently held in store.',
+    tag:'<<subtype>>',
+    fields:[
+      {n:'InvID',       t:'int',         pk:true},
+      {n:'InputID',     t:'int',         fk:true},
+      {n:'StoreLocation',t:'varchar(100)'},
+      {n:'BatchNo',     t:'varchar(40)'},
+      {n:'ExpiryDate',  t:'date'},
+      {n:'ConditionStatus',t:'enum'},
+    ]},
+
+  { id:'ReceivedInputs',layer:'Distribution', x:860, y:4200,
+    note:'DISJOINT subtype of Inputs. Newly arrived shipments.',
+    tag:'<<subtype>>',
+    fields:[
+      {n:'RecvID',      t:'int',         pk:true},
+      {n:'InputID',     t:'int',         fk:true},
+      {n:'Giver',       t:'varchar(120)'},
+      {n:'ReceivedDate',t:'date'},
+      {n:'QuantityReceived',t:'decimal'},
+    ]},
+
+  { id:'InputCategory',layer:'Distribution', x:1180, y:3620,
+    note:'Seedling, Fertilizer, Pesticide, Fungicide, Tool, Equipment.',
+    fields:[
+      {n:'CatID',       t:'int',         pk:true},
+      {n:'Name',        t:'varchar(80)'},
+      {n:'Description', t:'text'},
+    ]},
+
+  /* ── EXPORT ── */
+  { id:'Processor',   layer:'Export', x:2300, y:1660,
+    note:'Factory processing raw coffee. OVERLAPPING with Exporter.',
+    fields:[
+      {n:'ProcessorID', t:'int',         pk:true},
+      {n:'Name',        t:'varchar(150)'},
+      {n:'LicenseID',   t:'int',         fk:true},
+      {n:'VillageID',   t:'int',         fk:true},
+      {n:'ProcessorType',t:'enum'},
+    ]},
+
+  { id:'ProcessingRecord', layer:'Export', x:2300, y:2200,
+    note:'Tracks raw→processed conversion.',
+    fields:[
+      {n:'ProcessID',   t:'int',         pk:true},
+      {n:'GardenID',    t:'int',         fk:true},
+      {n:'ProcessorID', t:'int',         fk:true},
+      {n:'SeasonID',    t:'int',         fk:true},
+      {n:'RawKgIn',     t:'decimal'},
+      {n:'ProcessedKgOut',t:'decimal'},
+      {n:'ProcessType', t:'enum'},
+      {n:'LossKg',      t:'decimal',     gen:true},
+      {n:'YieldPct',    t:'decimal',     gen:true},
+    ]},
+
+  { id:'Exporter',    layer:'Export', x:2860, y:1660,
+    note:'Licensed coffee exporter. OVERLAPPING with Processor.',
+    fields:[
+      {n:'ExporterID',  t:'int',         pk:true},
+      {n:'Name',        t:'varchar(150)'},
+      {n:'LicenseID',   t:'int',         fk:true},
+      {n:'UCDARegNo',   t:'varchar(40)'},
+      {n:'ContactNIN',  t:'varchar(20)', fk:true},
+    ]},
+
+  { id:'ExportBatch', layer:'Export', x:2860, y:2200,
+    note:'One shipment. TotalUSD is generated (Qty × Price).',
+    fields:[
+      {n:'BatchID',     t:'int',         pk:true},
+      {n:'ExporterID',  t:'int',         fk:true},
+      {n:'ProcessID',   t:'int',         fk:true},
+      {n:'SeasonID',    t:'int',         fk:true},
+      {n:'QuantityKg',  t:'decimal'},
+      {n:'DestCountry', t:'varchar(80)'},
+      {n:'USDPricePerKg',t:'decimal'},
+      {n:'TotalUSD',    t:'decimal',     gen:true},
+      {n:'Status',      t:'enum'},
+    ]},
+
+  /* ── ADMIN ── */
+  { id:'License',     layer:'Admin',  x:2860, y:2880,
+    note:'CATEGORIZATION UNION: holder can be Person or Cooperative.',
+    fields:[
+      {n:'LicenseID',   t:'int',         pk:true},
+      {n:'LicTypeID',   t:'int',         fk:true},
+      {n:'HolderNIN',   t:'varchar(20)', fk:true},
+      {n:'IssuingBody', t:'varchar(100)'},
+      {n:'IssueDate',   t:'date'},
+      {n:'ExpiryDate',  t:'date'},
+      {n:'Status',      t:'enum'},
+    ]},
+
+  { id:'LicenseType', layer:'Admin',  x:3420, y:2880,
+    fields:[
+      {n:'LicTypeID',   t:'int',         pk:true},
+      {n:'Name',        t:'varchar(80)'},
+      {n:'Description', t:'text'},
+    ]},
+
+  { id:'Region',      layer:'Admin',  x:2300, y:2880,
+    note:'Top-level location. Central, Eastern, Northern, Western Uganda.',
+    fields:[
+      {n:'RegionID',    t:'int',         pk:true},
+      {n:'Name',        t:'varchar(80)'},
+    ]},
+
+  { id:'District',    layer:'Admin',  x:2300, y:3400,
+    fields:[
+      {n:'DistrictID',  t:'int',         pk:true},
+      {n:'Name',        t:'varchar(80)'},
+      {n:'RegionID',    t:'int',         fk:true},
+    ]},
+
+  { id:'Subcounty',   layer:'Admin',  x:2300, y:3900,
+    fields:[
+      {n:'SubcountyID', t:'int',         pk:true},
+      {n:'Name',        t:'varchar(80)'},
+      {n:'DistrictID',  t:'int',         fk:true},
+    ]},
+
+  { id:'Village',     layer:'Admin',  x:2300, y:4400,
+    note:'Leaf of location hierarchy.',
+    fields:[
+      {n:'VillageID',   t:'int',         pk:true},
+      {n:'Name',        t:'varchar(80)'},
+      {n:'SubcountyID', t:'int',         fk:true},
+    ]},
+
+  { id:'Office',      layer:'Admin',  x:2860, y:3400,
+    note:'Extension office. Workers assigned to an office which serves a region.',
+    fields:[
+      {n:'OfficeID',    t:'int',         pk:true},
+      {n:'Name',        t:'varchar(150)'},
+      {n:'RegionID',    t:'int',         fk:true},
+      {n:'OfficeType',  t:'enum'},
+    ]},
+
+  /* ── SUPPORT ── */
+  { id:'FarmVisit',   layer:'Support', x:60,   y:3620,
+    note:'Extension worker visits a specific garden.',
+    fields:[
+      {n:'VisitID',     t:'int',         pk:true},
+      {n:'WorkerID',    t:'int',         fk:true},
+      {n:'FarmerID',    t:'int',         fk:true},
+      {n:'GardenID',    t:'int',         fk:true},
+      {n:'VisitDate',   t:'date'},
+      {n:'Purpose',     t:'enum'},
+      {n:'Report',      t:'text'},
+      {n:'NextVisitDate',t:'date'},
+    ]},
+
+  { id:'ResourceRequest', layer:'Support', x:620, y:2400,
+    note:'Raised during a visit. Approved request auto-creates a Distribution.',
+    fields:[
+      {n:'RequestID',   t:'int',         pk:true},
+      {n:'VisitID',     t:'int',         fk:true},
+      {n:'InputID',     t:'int',         fk:true},
+      {n:'QuantityNeeded',t:'decimal'},
+      {n:'UrgencyLevel',t:'enum'},
+      {n:'Status',      t:'enum'},
+      {n:'ApprovedBy',  t:'int',         fk:true},
+    ]},
+
+  { id:'Scheme',      layer:'Support', x:1740, y:3400,
+    note:'Government/NGO support programme.',
+    fields:[
+      {n:'SchemeID',    t:'int',         pk:true},
+      {n:'Name',        t:'varchar(150)'},
+      {n:'SchemeType',  t:'enum'},
+      {n:'StartDate',   t:'date'},
+      {n:'EndDate',     t:'date'},
+      {n:'FundingSource',t:'varchar(100)'},
+    ]},
+
+  { id:'SchemeEnrolment', layer:'Support', x:1740, y:3900,
+    note:'Bridge: M:N between Farmer and Scheme.',
+    tag:'<<bridge>>',
+    fields:[
+      {n:'EnrolID',     t:'int',         pk:true},
+      {n:'FarmerID',    t:'int',         fk:true},
+      {n:'SchemeID',    t:'int',         fk:true},
+      {n:'EnrolDate',   t:'date'},
+      {n:'Status',      t:'enum'},
+    ]},
+];
+
+
+
+const RELS = [
+  {a:'Farmer',      b:'Farm',             label:'owns',           card:'1..N'},
+  {a:'Farm',        b:'Garden',           label:'has',            card:'1..N'},
+  {a:'Farmer',      b:'CoopMember',       label:'member of',      card:'1..N'},
+  {a:'Cooperative', b:'CoopMember',       label:'has',            card:'1..N'},
+  {a:'Garden',      b:'GardenSeason',     label:'enrolled in',    card:'1..N'},
+  {a:'Season',      b:'GardenSeason',     label:'has',            card:'1..N'},
+  {a:'Garden',      b:'ProductionRecord', label:'produces',       card:'1..N'},
+  {a:'Season',      b:'ProductionRecord', label:'in season',      card:'1..N'},
+  {a:'ProductionRecord',b:'SaleRecord',   label:'sold as',        card:'1..N'},
+  {a:'ProductionRecord',b:'ProcessingRecord',label:'processed as',card:'1..N'},
+  {a:'CoffeeType',  b:'CoffeeGrade',      label:'graded as',      card:'1..N'},
+  {a:'CoffeeGrade', b:'MarketPrice',      label:'priced at',      card:'1..N'},
+  {a:'Garden',      b:'Distribution',     label:'receives',       card:'1..N'},
+  {a:'Distribution',b:'DistribItem',      label:'contains',       card:'1..N'},
+  {a:'Inputs',      b:'DistribItem',      label:'included in',    card:'1..N'},
+  {a:'InputCategory',b:'Inputs',          label:'categorises',    card:'1..N'},
+  {a:'FarmVisit',   b:'ResourceRequest',  label:'raises',         card:'1..N'},
+  {a:'ResourceRequest',b:'Distribution',  label:'fulfilled by',   card:'1..1'},
+  {a:'Processor',   b:'ProcessingRecord', label:'processes',      card:'1..N'},
+  {a:'ProcessingRecord',b:'ExportBatch',  label:'exported as',    card:'1..N'},
+  {a:'Exporter',    b:'ExportBatch',      label:'exports',        card:'1..N'},
+  {a:'LicenseType', b:'License',          label:'classifies',     card:'1..N'},
+  {a:'License',     b:'Processor',        label:'covers',         card:'1..N'},
+  {a:'License',     b:'Exporter',         label:'covers',         card:'1..N'},
+  {a:'Region',      b:'District',         label:'contains',       card:'1..N'},
+  {a:'District',    b:'Subcounty',        label:'contains',       card:'1..N'},
+  {a:'Subcounty',   b:'Village',          label:'contains',       card:'1..N'},
+  {a:'Office',      b:'ExtWorker',        label:'employs',        card:'1..N'},
+  {a:'ExtWorker',   b:'FarmVisit',        label:'conducts',       card:'1..N'},
+  {a:'ExtWorker',   b:'Distribution',     label:'distributes',    card:'1..N'},
+  {a:'Farmer',      b:'SchemeEnrolment',  label:'enrolls in',     card:'1..N'},
+  {a:'Scheme',      b:'SchemeEnrolment',  label:'for scheme',     card:'1..N'},
+  {a:'Garden',      b:'FarmVisit',        label:'visited at',     card:'1..N'},
+  {a:'Garden',      b:'CoffeeGrade',      label:'grade of',       card:'N..1'},
+  {a:'Village',     b:'Person',           label:'home of',        card:'1..N'},
+  {a:'Village',     b:'Garden',           label:'location of',    card:'1..N'},
+  {a:'Village',     b:'Processor',        label:'located in',     card:'1..N'},
+  {a:'License',     b:'Farm',             label:'authorizes',     card:'1..1'},
+  {a:'District',    b:'Cooperative',      label:'registered in',  card:'1..N'},
+  {a:'Region',      b:'Office',           label:'served by',      card:'1..N'},
+  {a:'Region',      b:'MarketPrice',      label:'prices for',     card:'1..N'},
+  {a:'Region',      b:'ExtWorker',        label:'assigned to',    card:'1..N'},
+  {a:'Person',      b:'Cooperative',      label:'contacts',       card:'1..1'},
+  {a:'Person',      b:'Exporter',         label:'contacts',       card:'1..1'},
+  {a:'Farmer',      b:'Distribution',     label:'receives',       card:'1..N'},
+];
+
+// SPECS: specialization hierarchies
+// type: 'o' = overlapping (circle with O), 'd' = disjoint (circle with D)
+const SPECS = [
+  {parent:'Person',  children:['Farmer','SystemUser','Staff'],   type:'o'},
+  {parent:'Staff',   children:['ExtWorker','DBManager'],         type:'d'},
+  {parent:'Inputs',  children:['InputInventory','ReceivedInputs'],type:'d'},
+];
+
+/* ── STATE ── */
+const layerOn = {};
+Object.keys(LAYER_COLORS).forEach(l => layerOn[l] = true);
+let zoom = 1;
+const entityPos = {};
+ENTITIES.forEach(e => entityPos[e.id] = {x: e.x, y: e.y});
+
+/* ── ENTITY DIMENSIONS ── */
+const ENTITY_W = 220;
+function entityH(e) { return 28 + e.fields.length * 24; }
+
+/* ── RENDER ENTITIES ── */
+function buildEntities() {
+  const canvas = document.getElementById('canvas');
+  canvas.querySelectorAll('.entity').forEach(el => el.remove());
+
+  ENTITIES.forEach(e => {
+    if (!layerOn[e.layer]) return;
+    const col = LAYER_COLORS[e.layer];
+    const brd = LAYER_BORDERS[e.layer];
+
+    const div = document.createElement('div');
+    div.className = 'entity';
+    div.id = 'ent-' + e.id;
+    const pos = entityPos[e.id];
+    div.style.left = pos.x + 'px';
+    div.style.top  = pos.y + 'px';
+    div.style.borderColor = brd;
+
+    /* header */
+    const hdr = document.createElement('div');
+    hdr.className = 'entity-header';
+    hdr.style.background = col;
+    hdr.style.borderBottomColor = brd;
+
+    const nm = document.createElement('div');
+    nm.className = 'entity-name';
+    nm.textContent = e.id;
+    hdr.appendChild(nm);
+
+    if (e.tag) {
+      const tg = document.createElement('div');
+      tg.className = 'entity-tag';
+      tg.textContent = e.tag;
+      hdr.appendChild(tg);
+    }
+    div.appendChild(hdr);
+
+    /* fields */
+    const body = document.createElement('div');
+    body.className = 'entity-body';
+
+    e.fields.forEach(f => {
+      const row = document.createElement('div');
+      row.className = 'entity-field';
+
+      const gut = document.createElement('div');
+      gut.className = 'field-gutter';
+      gut.textContent = f.pk ? 'PK' : f.fk ? 'FK' : '';
+      row.appendChild(gut);
+
+      const fn = document.createElement('div');
+      fn.className = 'field-name';
+      if (f.pk) fn.style.textDecoration = 'underline';
+      fn.textContent = f.n;
+      row.appendChild(fn);
+
+      const ft = document.createElement('div');
+      ft.className = 'field-type';
+      ft.textContent = f.t || '';
+      row.appendChild(ft);
+
+      body.appendChild(row);
+    });
+
+    div.appendChild(body);
+
+    /* tooltip */
+    div.addEventListener('mouseenter', ev => {
+      if (!e.note) return;
+      const tt = document.getElementById('tooltip');
+      tt.innerHTML = `<b>${e.id}</b>${e.note}`;
+      tt.style.display = 'block';
+    });
+    div.addEventListener('mousemove', ev => {
+      const tt = document.getElementById('tooltip');
+      tt.style.left = (ev.clientX + 14) + 'px';
+      tt.style.top  = (ev.clientY + 14) + 'px';
+    });
+    div.addEventListener('mouseleave', () => {
+      document.getElementById('tooltip').style.display = 'none';
+    });
+
+    /* drag */
+    let dragging = false, ox, oy;
+    hdr.addEventListener('mousedown', ev => {
+      if (ev.button !== 0) return;
+      dragging = true;
+      const pos = entityPos[e.id];
+      ox = ev.clientX / zoom - pos.x;
+      oy = ev.clientY / zoom - pos.y;
+      div.style.zIndex = 50;
+      ev.preventDefault();
+    });
+    window.addEventListener('mousemove', ev => {
+      if (!dragging) return;
+      const pos = entityPos[e.id];
+      pos.x = ev.clientX / zoom - ox;
+      pos.y = ev.clientY / zoom - oy;
+      div.style.left = pos.x + 'px';
+      div.style.top  = pos.y + 'px';
+      drawSVG();
+    });
+    window.addEventListener('mouseup', () => {
+      if (dragging) { dragging = false; div.style.zIndex = 10; }
+    });
+
+    canvas.appendChild(div);
+  });
+}
+
+/* ── SVG RELATIONSHIPS ── */
+/**
+ * Returns the centre and bounding box of an entity.
+ */
+function getCentre(id) {
+  const pos = entityPos[id];
+  const e   = ENTITIES.find(e => e.id === id);
+  if (!pos || !e) return null;
+  const h = entityH(e);
+  const w = ENTITY_W;
+  return {
+    x:  pos.x + w / 2,   // horizontal centre
+    y:  pos.y + h / 2,   // vertical centre
+    w,
+    h,
+    left:   pos.x,
+    top:    pos.y,
+    right:  pos.x + w,
+    bottom: pos.y + h
+  };
+}
+
+/**
+ * Returns the point on the edge of the entity's bounding box that is closest
+ * to the direction of (tx, ty) from the entity centre (c).
+ */
+function getEdge(c, tx, ty) {
+  const dx = tx - c.x;
+  const dy = ty - c.y;
+  if (Math.abs(dx) < 0.001 && Math.abs(dy) < 0.001) return {x: c.x, y: c.top};
+  // How far can we go in x and y directions before hitting the box wall
+  const sx = (dx !== 0) ? (c.w / 2) / Math.abs(dx) : Infinity;
+  const sy = (dy !== 0) ? (c.h / 2) / Math.abs(dy) : Infinity;
+  const s  = Math.min(sx, sy);
+  return { x: c.x + dx * s, y: c.y + dy * s };
+}
+
+function drawSVG() {
+  const NS  = 'http://www.w3.org/2000/svg';
+  const svg = document.getElementById('svg-layer');
+  svg.innerHTML = '';
+
+  /* compute canvas size */
+  let maxX = 0, maxY = 0;
+  ENTITIES.forEach(e => {
+    if (!layerOn[e.layer]) return;
+    const pos = entityPos[e.id];
+    maxX = Math.max(maxX, pos.x + ENTITY_W + 300);
+    maxY = Math.max(maxY, pos.y + entityH(e) + 200);
+  });
+  svg.setAttribute('width',  maxX);
+  svg.setAttribute('height', maxY);
+  document.getElementById('canvas').style.width  = maxX + 'px';
+  document.getElementById('canvas').style.height = maxY + 'px';
+
+  function el(tag, attrs) {
+    const e = document.createElementNS(NS, tag);
+    Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v));
+    return e;
+  }
+
+  function textNode(x, y, txt, size, anchor, fill) {
+    const t = document.createElementNS(NS, 'text');
+    t.setAttribute('x', x);
+    t.setAttribute('y', y);
+    t.setAttribute('text-anchor', anchor || 'middle');
+    t.setAttribute('dominant-baseline', 'central');
+    t.style.fontFamily = 'Helvetica, Arial, sans-serif';
+    t.style.fontSize   = size || '10px';
+    t.setAttribute('fill', fill || '#333333');
+    t.textContent = txt;
+    svg.appendChild(t);
+  }
+
+  /* Orthogonal (90-degree only) router.
+   * H-dominant: exits A left/right -> goes to midX -> turns -> goes to y2 -> turns -> reaches B
+   * V-dominant: exits A top/bottom -> goes to midY -> turns -> goes to x2 -> turns -> reaches B
+   * Returns the SVG path string and elbow point for the diamond placement.
+   */
+  function orthoRoute(ca, cb) {
+    const dx = cb.x - ca.x;
+    const dy = cb.y - ca.y;
+    let x1, y1, x2, y2, pathD, elbowX, elbowY;
+
+    if (Math.abs(dx) >= Math.abs(dy)) {
+      // Horizontal dominant — exit from L/R sides
+      x1 = dx >= 0 ? ca.right : ca.left;
+      y1 = ca.y;
+      x2 = dx >= 0 ? cb.left  : cb.right;
+      y2 = cb.y;
+      const midX = (x1 + x2) / 2;
+      pathD  = `M ${x1} ${y1} H ${midX} V ${y2} H ${x2}`;
+      elbowX = midX;
+      elbowY = (y1 + y2) / 2;   // midpoint of the vertical segment
+    } else {
+      // Vertical dominant — exit from T/B sides
+      x1 = ca.x;
+      y1 = dy >= 0 ? ca.bottom : ca.top;
+      x2 = cb.x;
+      y2 = dy >= 0 ? cb.top   : cb.bottom;
+      const midY = (y1 + y2) / 2;
+      pathD  = `M ${x1} ${y1} V ${midY} H ${x2} V ${y2}`;
+      elbowX = (x1 + x2) / 2;   // midpoint of the horizontal segment
+      elbowY = midY;
+    }
+    return { pathD, x1, y1, x2, y2, elbowX, elbowY,
+             hDom: Math.abs(dx) >= Math.abs(dy) };
+  }
+
+  /* ── Draw regular relationships (90-degree orthogonal routing) ── */
+  RELS.forEach(r => {
+    const ea = ENTITIES.find(e => e.id === r.a);
+    const eb = ENTITIES.find(e => e.id === r.b);
+    if (!ea || !eb || !layerOn[ea.layer] || !layerOn[eb.layer]) return;
+
+    const ca = getCentre(r.a);
+    const cb = getCentre(r.b);
+    if (!ca || !cb) return;
+
+    const lineCol = '#808080';
+    const { pathD, x1, y1, x2, y2, elbowX, elbowY, hDom } = orthoRoute(ca, cb);
+
+    /* Draw the orthogonal path */
+    svg.appendChild(el('path', {
+      d: pathD, stroke: lineCol, 'stroke-width': 1.2, fill: 'none'
+    }));
+
+    /* Diamond at elbow midpoint */
+    const textLen = r.label.length * 6 + 10;
+    const dw = Math.max(38, textLen), dh = 16;
+    const mx = elbowX, my = elbowY;
+
+    // White background rect to erase the path behind the diamond
+    svg.appendChild(el('rect', {
+      x: mx - dw - 2, y: my - dh - 2,
+      width: (dw + 2) * 2, height: (dh + 2) * 2,
+      fill: '#f5f5f5'
+    }));
+    svg.appendChild(el('polygon', {
+      points: `${mx},${my - dh} ${mx + dw},${my} ${mx},${my + dh} ${mx - dw},${my}`,
+      fill: '#ffffff', stroke: lineCol, 'stroke-width': 1.2
+    }));
+    textNode(mx, my, r.label, '10px', 'middle', '#000000');
+
+    /* Cardinality labels — placed just inside each entity end, offset away from line */
+    const off = 20;
+    const nc = (r.card === '1..1') ? '1' : 'N';
+    if (hDom) {
+      // A exits L or R — label sits above the horizontal exit segment
+      const dirX = cb.x >= ca.x ? 1 : -1;
+      textNode(x1 + dirX * off, y1 - 11, '1',  '10px', 'middle', '#444');
+      textNode(x2 - dirX * off, y2 - 11, nc, '10px', 'middle', '#444');
+    } else {
+      // A exits T or B — label sits to the right of the vertical exit segment
+      const dirY = cb.y >= ca.y ? 1 : -1;
+      textNode(x1 + 12, y1 + dirY * off, '1',  '10px', 'middle', '#444');
+      textNode(x2 + 12, y2 - dirY * off, nc, '10px', 'middle', '#444');
+    }
+  });
+
+  /* ── Draw specialization hierarchies ── */
+  SPECS.forEach(sp => {
+    const pe = ENTITIES.find(e => e.id === sp.parent);
+    if (!pe || !layerOn[pe.layer]) return;
+
+    const visC = sp.children
+      .map(id => ENTITIES.find(e => e.id === id))
+      .filter(e => e && layerOn[e.layer]);
+    if (!visC.length) return;
+
+    const ppos = entityPos[sp.parent];
+    const ph   = entityH(pe);
+    const px   = ppos.x + ENTITY_W / 2;
+    const py   = ppos.y + ph;          // bottom of parent
+
+    const circY = py + 45;             // centre of the specialization circle
+    const circR = 18;
+    const specCol = '#000000';
+
+    // Line from parent bottom to circle top
+    svg.appendChild(el('line', {x1: px, y1: py, x2: px, y2: circY - circR, stroke: specCol, 'stroke-width': 1.5}));
+
+    // Always draw a circle (disjoint = solid border, overlapping = double)
+    svg.appendChild(el('circle', {
+      cx: px, cy: circY, r: circR,
+      fill: '#ffffff',
+      stroke: specCol, 'stroke-width': 1.5
+    }));
+    if (sp.type === 'o') {
+      // Extra inner circle for overlapping
+      svg.appendChild(el('circle', {
+        cx: px, cy: circY, r: circR - 5,
+        fill: 'none',
+        stroke: specCol, 'stroke-width': 1
+      }));
+    }
+
+    // Label inside circle
+    const ct = document.createElementNS(NS, 'text');
+    ct.setAttribute('x', px);
+    ct.setAttribute('y', circY);
+    ct.setAttribute('text-anchor', 'middle');
+    ct.setAttribute('dominant-baseline', 'central');
+    ct.style.fontFamily = 'Helvetica, Arial, sans-serif';
+    ct.style.fontSize   = '11px';
+    ct.style.fontWeight = 'bold';
+    ct.textContent      = sp.type.toUpperCase();
+    svg.appendChild(ct);
+
+    // Horizontal bar below circle connecting to all children
+    const childXs = visC.map(c => entityPos[c.id].x + ENTITY_W / 2);
+    const barY    = circY + circR + 20;
+    const barMin  = Math.min(px, ...childXs);
+    const barMax  = Math.max(px, ...childXs);
+
+    // Line from circle bottom to bar
+    svg.appendChild(el('line', {x1: px, y1: circY + circR, x2: px, y2: barY, stroke: specCol, 'stroke-width': 1.5}));
+    // Horizontal connecting bar
+    svg.appendChild(el('line', {x1: barMin, y1: barY, x2: barMax, y2: barY, stroke: specCol, 'stroke-width': 1.5}));
+
+    // Drop lines from bar to each child with open triangle arrow
+    visC.forEach(c => {
+      const cpos = entityPos[c.id];
+      const chx  = cpos.x + ENTITY_W / 2;
+      const chy  = cpos.y;  // top of child
+
+      // Drop line
+      svg.appendChild(el('line', {x1: chx, y1: barY, x2: chx, y2: chy + 8, stroke: specCol, 'stroke-width': 1.5}));
+
+      // Open upward-pointing triangle (arrow head at child top)
+      const tri = `${chx-6},${chy+8} ${chx+6},${chy+8} ${chx},${chy}`;
+      svg.appendChild(el('polygon', {
+        points: tri,
+        fill:   '#ffffff',  // open / hollow
+        stroke: specCol,
+        'stroke-width': 1.5
+      }));
+    });
+  });
+}
+
+/* ── TOOLBAR ── */
+function buildToolbar() {
+  const container = document.getElementById('layer-btns');
+  container.innerHTML = '';
+  Object.keys(LAYER_COLORS).forEach(l => {
+    const btn = document.createElement('div');
+    btn.className = 'layer-btn';
+    btn.textContent = l;
+    btn.style.background  = layerOn[l] ? LAYER_COLORS[l] : 'transparent';
+    btn.style.borderColor = LAYER_BORDERS[l];
+    btn.addEventListener('click', () => {
+      layerOn[l] = !layerOn[l];
+      btn.style.background = layerOn[l] ? LAYER_COLORS[l] : 'transparent';
+      buildEntities();
+      drawSVG();
+    });
+    container.appendChild(btn);
+  });
+}
+
+/* ── PAN & ZOOM ── */
+let isPan = false, panX, panY, scrollX, scrollY;
+const wrap = document.getElementById('canvas-wrap');
+wrap.addEventListener('mousedown', ev => {
+  if (ev.target.closest('.entity-header') || ev.target.closest('.layer-btn')) return;
+  isPan = true; panX = ev.clientX; panY = ev.clientY;
+  scrollX = wrap.scrollLeft; scrollY = wrap.scrollTop;
+});
+window.addEventListener('mousemove', ev => {
+  if (!isPan) return;
+  wrap.scrollLeft = scrollX - (ev.clientX - panX);
+  wrap.scrollTop  = scrollY - (ev.clientY - panY);
+});
+window.addEventListener('mouseup', () => isPan = false);
+
+function applyZoom() {
+  document.getElementById('canvas').style.transform = `scale(${zoom})`;
+  document.getElementById('zoom-indicator').textContent = `${Math.round(zoom*100)}%`;
+}
+function zoomIn()  { zoom = Math.min(2, zoom + 0.1); applyZoom(); }
+function zoomOut() { zoom = Math.max(0.1, zoom - 0.1); applyZoom(); }
+function resetView() { zoom = 0.5; applyZoom(); wrap.scrollTo(0, 0); }
+
+wrap.addEventListener('wheel', ev => {
+  if (ev.ctrlKey || ev.metaKey) {
+    ev.preventDefault();
+    zoom = Math.max(0.1, Math.min(2, zoom - ev.deltaY * 0.001));
+    applyZoom();
+  }
+}, { passive: false });
+
+let allOn = true;
+function toggleAll() {
+  allOn = !allOn;
+  Object.keys(LAYER_COLORS).forEach(l => layerOn[l] = allOn);
+  buildToolbar();
+  buildEntities();
+  drawSVG();
+}
+
+function toggleToolbar() {
+  const toolbar  = document.getElementById('toolbar');
+  const showBtn  = document.getElementById('show-btn');
+  const hidden   = toolbar.classList.toggle('hidden');
+  showBtn.classList.toggle('visible', hidden);
+}
+
+/* ── LAYOUT TOGGLE ── */
+let currentLayout = 'organized';
+
+// Store original positions so we can snap back
+const ORIGINAL_POS = {};
+ENTITIES.forEach(e => { ORIGINAL_POS[e.id] = { x: e.x, y: e.y }; });
+
+function setLayout(mode) {
+  currentLayout = mode;
+  document.getElementById('btn-organized').classList.toggle('active', mode === 'organized');
+  document.getElementById('btn-flexible').classList.toggle('active', mode === 'flexible');
+
+  if (mode === 'organized') {
+    // Snap all entities back to their defined positions
+    ENTITIES.forEach(e => {
+      entityPos[e.id] = { x: ORIGINAL_POS[e.id].x, y: ORIGINAL_POS[e.id].y };
+      const el = document.getElementById('ent-' + e.id);
+      if (el) {
+        el.style.left = entityPos[e.id].x + 'px';
+        el.style.top  = entityPos[e.id].y + 'px';
+      }
+    });
+    drawSVG();
+  }
+  // Flexible mode = already draggable (no-op, just keep current positions)
+}
+
+buildToolbar();
+buildEntities();
+drawSVG();
+resetView();
+toggleToolbar(); // start collapsed
+</script>
+</body>
+</html>
