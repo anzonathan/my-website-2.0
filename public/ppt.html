@@ -15,11 +15,8 @@
     href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap"
     rel="stylesheet">
 
-  <!-- GSAP + ScrollTrigger -->
+  <!-- GSAP -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-  <!-- Three.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
   <style>
     /* ═══════════════════════════════════════════════
@@ -337,29 +334,7 @@
       background: var(--border);
     }
 
-    /* ═══════════════════════════════════════════════
-   THREE.JS CANVAS
-   ═══════════════════════════════════════════════ */
-    #three-canvas-intro,
-    #three-canvas-security {
-      position: absolute;
-      z-index: 1;
-      pointer-events: none;
-    }
 
-    #three-canvas-intro {
-      top: 0;
-      right: 0;
-      width: 50%;
-      height: 100%;
-    }
-
-    #three-canvas-security {
-      top: 0;
-      right: 0;
-      width: 45%;
-      height: 100%;
-    }
 
     /* ═══════════════════════════════════════════════
    TEAM GRID
@@ -1105,7 +1080,6 @@
     <!-- ─── SLIDE 01 — TITLE ─── -->
     <section class="slide photo-slide light-wash" id="s01">
       <div class="slide-bg" style="background-image:url('assets/hero.png')"></div>
-      <canvas id="three-canvas-intro"></canvas>
       <div class="slide-logo">Agri_DB</div>
       <div class="slide-content narrow centered" style="z-index:3">
         <div class="eyebrow" style="justify-content:center"><span class="dot"></span>CSC2209 — Easter 2026 Semester
@@ -1858,7 +1832,6 @@
     <section class="slide" id="s15">
       <div class="slide-label">04 — System Implementation</div>
       <div class="slide-logo">Agri_DB</div>
-      <canvas id="three-canvas-security"></canvas>
       <div class="slide-content" style="z-index:3">
         <div class="eyebrow"><span class="dot"></span>Backup & Recovery</div>
         <h2 class="title-lg">Data Protection Strategy</h2>
@@ -2181,16 +2154,6 @@
       document.getElementById('prev-btn').addEventListener('click', () => goTo(current - 1));
       document.getElementById('next-btn').addEventListener('click', () => goTo(current + 1));
 
-      // ── PARALLAX on slide bg ──
-      document.addEventListener('mousemove', (e) => {
-        const bgs = slides[current].querySelectorAll('.slide-bg');
-        const mx = (e.clientX / window.innerWidth - 0.5) * 20;
-        const my = (e.clientY / window.innerHeight - 0.5) * 20;
-        bgs.forEach(bg => {
-          bg.style.transform = `translate(${mx}px, ${my}px)`;
-        });
-      });
-
       // ── RESIZE handler ──
       window.addEventListener('resize', () => {
         gsap.set(theatre, { x: -current * window.innerWidth });
@@ -2199,83 +2162,6 @@
       // ── INIT ──
       updateUI();
       animateSlideIn(slides[0]);
-
-      // ═══════════════════════════════════════════════
-      // THREE.JS — Rotating 3D Coffee Bean (wireframe mesh)
-      // ═══════════════════════════════════════════════
-      function initThreeScene(canvasId, parentSlideId) {
-        const canvas = document.getElementById(canvasId);
-        if (!canvas) return;
-        const parentSlide = document.getElementById(parentSlideId);
-        if (!parentSlide) return;
-
-        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-        camera.position.z = 5;
-
-        // Create a coffee-bean-like shape using torusKnot
-        const geometry = new THREE.TorusKnotGeometry(1.2, 0.4, 128, 32, 2, 3);
-        const material = new THREE.MeshBasicMaterial({
-          color: 0x059669,
-          wireframe: true,
-          transparent: true,
-          opacity: 0.15
-        });
-        const mesh = new THREE.Mesh(geometry, material);
-        scene.add(mesh);
-
-        // Secondary mesh (inner glow)
-        const geometry2 = new THREE.IcosahedronGeometry(1.0, 2);
-        const material2 = new THREE.MeshBasicMaterial({
-          color: 0x34D399,
-          wireframe: true,
-          transparent: true,
-          opacity: 0.08
-        });
-        const mesh2 = new THREE.Mesh(geometry2, material2);
-        scene.add(mesh2);
-
-        // Points (data-mesh effect)
-        const pointsGeom = new THREE.TorusKnotGeometry(1.5, 0.3, 64, 16, 2, 3);
-        const pointsMat = new THREE.PointsMaterial({
-          color: 0x059669,
-          size: 0.02,
-          transparent: true,
-          opacity: 0.25
-        });
-        const points = new THREE.Points(pointsGeom, pointsMat);
-        scene.add(points);
-
-        function resize() {
-          const rect = canvas.getBoundingClientRect();
-          const w = rect.width || 400;
-          const h = rect.height || 400;
-          renderer.setSize(w, h);
-          camera.aspect = w / h;
-          camera.updateProjectionMatrix();
-        }
-        resize();
-        window.addEventListener('resize', resize);
-
-        function animate() {
-          requestAnimationFrame(animate);
-          mesh.rotation.x += 0.003;
-          mesh.rotation.y += 0.005;
-          mesh2.rotation.x -= 0.002;
-          mesh2.rotation.y += 0.003;
-          points.rotation.x += 0.001;
-          points.rotation.y -= 0.002;
-          renderer.render(scene, camera);
-        }
-        animate();
-      }
-
-      // Initialize Three.js scenes
-      initThreeScene('three-canvas-intro', 's01');
-      initThreeScene('three-canvas-security', 's15');
 
     })();
   </script>
