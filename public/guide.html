@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agri_DB — SQL Demo Guide · CSC2209</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary:       #1a5c32;
+  --primary-light: #e8f5e9;
+  --primary-mid:   #2e7d32;
+  --accent:        #00897b;
+  --blue:          #1565c0;
+  --blue-light:    #e3f2fd;
+  --orange:        #e65100;
+  --orange-light:  #fff3e0;
+  --purple:        #6a1b9a;
+  --purple-light:  #f3e5f5;
+  --red:           #b71c1c;
+  --red-light:     #ffebee;
+  --yellow:        #f57f17;
+  --yellow-light:  #fffde7;
+  --teal-light:    #e0f2f1;
+  --ink:           #1a1a2e;
+  --muted:         #555;
+  --border:        #e0e0e0;
+  --bg:            #f7f8fa;
+  --card:          #ffffff;
+  --mono:          'JetBrains Mono', monospace;
+  --sans:          'Inter', sans-serif;
+  --sidebar-w:     256px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.65;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ─── TOP BAR ─── */
+#topbar {
+  height: 48px;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 14px;
+  flex-shrink: 0;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.25);
+  z-index: 200;
+}
+.logo { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.logo-icon {
+  width: 26px; height: 26px;
+  background: rgba(255,255,255,0.18);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+.breadcrumb { font-size: 11px; opacity: 0.55; display: flex; align-items: center; gap: 6px; }
+.topbar-badge {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 600;
+  background: rgba(255,255,255,0.15);
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+}
+.topbar-links { display: flex; gap: 8px; }
+.topbar-links a {
+  font-size: 11px;
+  color: rgba(255,255,255,0.75);
+  text-decoration: none;
+  border: 1px solid rgba(255,255,255,0.25);
+  padding: 4px 12px;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+.topbar-links a:hover { background: rgba(255,255,255,0.12); color:#fff; }
+
+/* ─── LAYOUT ─── */
+#doc-layout { display: flex; flex: 1; overflow: hidden; }
+
+/* ─── SIDEBAR ─── */
+#sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+#sidebar-inner {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 0 32px;
+  scrollbar-width: thin;
+  scrollbar-color: #ddd transparent;
+}
+#sidebar-inner::-webkit-scrollbar { width: 4px; }
+#sidebar-inner::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+
+.nav-group { margin-bottom: 4px; }
+.nav-group-label {
+  font-size: 9.5px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: #bbb; padding: 10px 18px 4px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 18px;
+  font-size: 12px; font-weight: 500; color: #444;
+  text-decoration: none;
+  border-left: 3px solid transparent;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  cursor: pointer;
+}
+.nav-item:hover { background: #f4f9f5; color: var(--primary); }
+.nav-item.active {
+  background: var(--primary-light);
+  border-left-color: var(--primary);
+  color: var(--primary);
+  font-weight: 600;
+}
+.nav-icon {
+  width: 20px; height: 20px;
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; flex-shrink: 0;
+}
+.nav-sub {
+  display: block;
+  padding: 4px 18px 4px 50px;
+  font-size: 11px; color: #888;
+  text-decoration: none;
+  border-left: 3px solid transparent;
+  transition: color 0.1s;
+}
+.nav-sub:hover { color: var(--primary); }
+.nav-sub.active { color: var(--primary); font-weight: 600; }
+.sidebar-footer {
+  padding: 12px 18px; font-size: 10px; color: #bbb;
+  border-top: 1px solid var(--border);
+}
+
+/* ─── CONTENT ─── */
+#content { flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #ddd transparent; }
+#content::-webkit-scrollbar { width: 6px; }
+#content::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+#content-inner { max-width: 880px; margin: 0 auto; padding: 36px 44px 100px; }
+
+/* ─── HERO BANNER ─── */
+.hero {
+  background: linear-gradient(135deg, var(--primary) 0%, #2d6a4f 55%, #1b4332 100%);
+  color: #fff;
+  border-radius: 12px;
+  padding: 36px 40px 32px;
+  margin-bottom: 40px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; top: -60px; right: -60px;
+  width: 220px; height: 220px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 50%;
+}
+.hero::after {
+  content: '';
+  position: absolute; bottom: -40px; left: -40px;
+  width: 160px; height: 160px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 50%;
+}
+.hero-tag {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
+  text-transform: uppercase; opacity: 0.6; margin-bottom: 12px;
+}
+.hero h1 { font-size: 26px; font-weight: 700; line-height: 1.2; margin-bottom: 10px; }
+.hero p { font-size: 13px; opacity: 0.75; max-width: 560px; }
+.hero-chips { display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+.hero-chip {
+  font-size: 10px; font-weight: 600;
+  background: rgba(255,255,255,0.12);
+  padding: 4px 12px; border-radius: 20px;
+  letter-spacing: 0.03em;
+}
+
+/* ─── SECTION HEADERS ─── */
+.section-header {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 20px; padding-bottom: 12px;
+  border-bottom: 2px solid var(--border);
+}
+.section-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.section-header h2 { font-size: 18px; font-weight: 700; }
+.section-header .section-badge {
+  margin-left: auto; font-size: 10px; font-weight: 600;
+  padding: 3px 10px; border-radius: 20px;
+  letter-spacing: 0.04em;
+}
+
+section { margin-bottom: 56px; scroll-margin-top: 24px; }
+
+/* ─── STEPS ─── */
+.steps { display: flex; flex-direction: column; gap: 0; margin-bottom: 24px; }
+.step {
+  display: flex; gap: 16px;
+  padding: 0 0 24px 0;
+  position: relative;
+}
+.step:not(:last-child)::before {
+  content: '';
+  position: absolute; left: 15px; top: 32px; bottom: 0;
+  width: 2px; background: var(--border);
+}
+.step-num {
+  width: 32px; height: 32px; min-width: 32px;
+  background: var(--primary); color: #fff;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+  z-index: 1;
+}
+.step-body { flex: 1; padding-top: 4px; }
+.step-title { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.step-desc { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+
+/* ─── CODE BLOCKS ─── */
+.code-wrap { position: relative; margin: 10px 0; }
+.code-wrap pre {
+  background: #0d1117;
+  color: #c9d1d9;
+  border-radius: 8px;
+  padding: 16px 18px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.7;
+  overflow-x: auto;
+  border: 1px solid #21262d;
+}
+.copy-btn {
+  position: absolute; top: 8px; right: 8px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #8b949e;
+  font-size: 10px; font-weight: 600;
+  padding: 3px 10px; border-radius: 4px;
+  cursor: pointer; font-family: var(--sans);
+  transition: all 0.15s;
+}
+.copy-btn:hover { background: rgba(255,255,255,0.15); color: #c9d1d9; }
+.copy-btn.copied { background: rgba(46,160,67,0.2); color: #3fb950; border-color: #3fb950; }
+
+/* SQL syntax highlights */
+.kw  { color: #ff7b72; }  /* keywords */
+.fn  { color: #d2a8ff; }  /* functions / procedures */
+.str { color: #a5d6ff; }  /* strings */
+.num { color: #79c0ff; }  /* numbers */
+.cm  { color: #8b949e; font-style: italic; }  /* comments */
+.tbl { color: #ffa657; }  /* table names */
+.ok  { color: #3fb950; }  /* success */
+
+/* ─── RESULT TABLE ─── */
+.result-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 11.5px; }
+.result-table th {
+  background: #f0f0f0; font-weight: 600;
+  padding: 7px 12px; text-align: left;
+  border: 1px solid var(--border);
+  font-family: var(--mono); font-size: 10.5px;
+}
+.result-table td {
+  padding: 6px 12px; border: 1px solid var(--border);
+  font-family: var(--mono); color: #333;
+}
+.result-table tr:nth-child(even) td { background: #fafafa; }
+
+/* ─── CALLOUTS ─── */
+.callout {
+  display: flex; gap: 12px;
+  padding: 12px 16px; border-radius: 8px;
+  margin: 14px 0; font-size: 12px; line-height: 1.6;
+}
+.callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.callout.info    { background: var(--blue-light); border-left: 3px solid var(--blue); }
+.callout.success { background: var(--primary-light); border-left: 3px solid var(--primary); }
+.callout.warn    { background: var(--orange-light);  border-left: 3px solid var(--orange); }
+.callout.trigger { background: var(--purple-light); border-left: 3px solid var(--purple); }
+
+/* ─── FEATURE GRID ─── */
+.feature-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px; margin: 14px 0;
+}
+.feature-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+.feature-card:hover { box-shadow: 0 3px 12px rgba(0,0,0,0.08); border-color: #bbb; }
+.feature-card .fc-icon { font-size: 20px; margin-bottom: 8px; }
+.feature-card .fc-title { font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+.feature-card .fc-desc  { font-size: 11px; color: var(--muted); }
+
+/* ─── ROLE TABLE ─── */
+.role-table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 12px; }
+.role-table th {
+  background: #1a5c32; color: #fff;
+  padding: 9px 14px; text-align: left;
+  font-weight: 600; font-size: 11px; letter-spacing: 0.03em;
+}
+.role-table td { padding: 8px 14px; border-bottom: 1px solid #eee; vertical-align: top; }
+.role-table tr:last-child td { border-bottom: none; }
+.role-table tr:nth-child(even) td { background: #fafff9; }
+.badge {
+  display: inline-block;
+  font-size: 9.5px; font-weight: 700;
+  padding: 2px 8px; border-radius: 12px;
+  margin: 1px 2px; white-space: nowrap;
+}
+.badge-green  { background: var(--primary-light); color: var(--primary); }
+.badge-blue   { background: var(--blue-light);    color: var(--blue); }
+.badge-orange { background: var(--orange-light);  color: var(--orange); }
+.badge-red    { background: var(--red-light);     color: var(--red); }
+.badge-purple { background: var(--purple-light);  color: var(--purple); }
+
+/* ─── TRIGGER CARD ─── */
+.trigger-list { display: flex; flex-direction: column; gap: 10px; margin: 10px 0; }
+.trigger-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--purple);
+  border-radius: 0 8px 8px 0;
+  padding: 12px 16px;
+}
+.trigger-card.success-trigger { border-left-color: var(--primary); }
+.trigger-card.warn-trigger    { border-left-color: var(--orange); }
+.trigger-card .tc-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+.trigger-card .tc-name { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--purple); }
+.trigger-card.success-trigger .tc-name { color: var(--primary); }
+.trigger-card.warn-trigger    .tc-name { color: var(--orange); }
+.trigger-card .tc-event { font-size: 10px; color: var(--muted); }
+.trigger-card .tc-desc { font-size: 11.5px; color: #444; }
+</style>
+</head>
+<body>
+
+<!-- ═══ TOP BAR ═══ -->
+<div id="topbar">
+  <div class="logo">
+    <div class="logo-icon">🌱</div>
+    Agri_DB
+  </div>
+  <div class="breadcrumb"><span>›</span> SQL Demo Guide</div>
+  <div class="topbar-badge">CSC2209 · Easter 2026</div>
+
+</div>
+
+<!-- ═══ LAYOUT ═══ -->
+<div id="doc-layout">
+
+  <!-- ─── SIDEBAR ─── -->
+  <nav id="sidebar">
+    <div id="sidebar-inner">
+
+      <div class="nav-group">
+        <div class="nav-group-label">Getting Started</div>
+        <a class="nav-item" href="#g0" data-section="g0">
+          <span class="nav-icon">🚀</span> Quick Setup
+        </a>
+        <a class="nav-item" href="#g1" data-section="g1">
+          <span class="nav-icon">🗂️</span> File Structure
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group-label">Core Features</div>
+        <a class="nav-item" href="#g2" data-section="g2">
+          <span class="nav-icon">🏗️</span> Schema Demo
+        </a>
+        <a class="nav-sub" href="#g2">Register a Farmer</a>
+        <a class="nav-sub" href="#g2">Add a Garden</a>
+        <a class="nav-item" href="#g3" data-section="g3">
+          <span class="nav-icon">⚡</span> Triggers
+        </a>
+        <a class="nav-sub" href="#g3">Auto-compute Acreage</a>
+        <a class="nav-sub" href="#g3">Block bad harvest</a>
+        <a class="nav-sub" href="#g3">Stock deduction</a>
+        <a class="nav-item" href="#g4" data-section="g4">
+          <span class="nav-icon">⚙️</span> Stored Procedures
+        </a>
+        <a class="nav-sub" href="#g4">DistributeToGarden</a>
+        <a class="nav-sub" href="#g4">RecordHarvest</a>
+        <a class="nav-sub" href="#g4">CreateExportBatch</a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group-label">Reporting</div>
+        <a class="nav-item" href="#g5" data-section="g5">
+          <span class="nav-icon">📊</span> Views
+        </a>
+        <a class="nav-sub" href="#g5">Regional Production</a>
+        <a class="nav-sub" href="#g5">Export Summary</a>
+        <a class="nav-sub" href="#g5">Stock Status</a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group-label">Advanced</div>
+        <a class="nav-item" href="#g6" data-section="g6">
+          <span class="nav-icon">🔄</span> Transactions
+        </a>
+        <a class="nav-sub" href="#g6">Full farmer onboard</a>
+        <a class="nav-sub" href="#g6">Harvest pipeline</a>
+        <a class="nav-sub" href="#g6">Season rollover</a>
+        <a class="nav-item" href="#g7" data-section="g7">
+          <span class="nav-icon">🔐</span> User Privileges
+        </a>
+        <a class="nav-sub" href="#g7">Role overview</a>
+        <a class="nav-sub" href="#g7">Testing access</a>
+      </div>
+
+    </div>
+    <div class="sidebar-footer">MySQL 8.0+ · InnoDB · utf8mb4</div>
+  </nav>
+
+  <!-- ─── CONTENT ─── -->
+  <div id="content">
+    <div id="content-inner">
+
+      <!-- HERO -->
+      <div class="hero">
+        <div class="hero-tag">Agricultural Services Database · CSC2209 Database Programming</div>
+        <h1>SQL Demo Guide</h1>
+        <p>Step-by-step walkthrough of all database features — triggers, stored procedures,
+           views, transactions, and role-based access control — with runnable SQL for each.</p>
+        <div class="hero-chips">
+          <span class="hero-chip">12 Triggers</span>
+          <span class="hero-chip">12 Procedures</span>
+          <span class="hero-chip">6 Views</span>
+          <span class="hero-chip">8 Transactions</span>
+          <span class="hero-chip">5 User Roles</span>
+          <span class="hero-chip">38 Tables</span>
+        </div>
+      </div>
+
+      <!-- ══════════ G0: SETUP ══════════ -->
+      <section id="g0">
+        <div class="section-header">
+          <div class="section-icon" style="background:#e8f5e9">🚀</div>
+          <h2>Quick Setup</h2>
+          <span class="section-badge badge-green">Step 1</span>
+        </div>
+
+        <p style="margin-bottom:16px;color:var(--muted)">
+          Deploy the entire database in one command, or run each file individually for fine-grained control.
+        </p>
+
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <div class="step-title">Connect to MySQL</div>
+              <div class="step-desc">Open a terminal and log in as root (or any user with CREATE DATABASE rights).</div>
+              <div class="code-wrap">
+                <pre><span class="cm"># Terminal</span>
+mysql -u root -p</pre>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <div class="step-title">Run the master script</div>
+              <div class="step-desc">This sources all files in the correct dependency order.</div>
+              <div class="code-wrap">
+                <pre><span class="cm">-- Inside MySQL shell</span>
+<span class="kw">SOURCE</span> sql/run_all.sql;</pre>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <div class="callout success">
+                <span class="callout-icon">✅</span>
+                <div>On success you will see: <strong>Agricultural Services Database deployed successfully.</strong><br>
+                The seed data loads 4 farmers, 5 gardens, 3 seasons, 2 export batches, and 1 cooperative.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <div class="step-title">Verify the database</div>
+              <div class="step-desc">Confirm all tables were created and data was loaded.</div>
+              <div class="code-wrap">
+                <pre><span class="kw">USE</span> agri_db;
+<span class="kw">SHOW</span> TABLES;
+<span class="kw">SELECT</span> <span class="fn">COUNT</span>(*) <span class="kw">AS</span> Farmers <span class="kw">FROM</span> <span class="tbl">Farmer</span>;
+<span class="kw">SELECT</span> <span class="fn">COUNT</span>(*) <span class="kw">AS</span> Gardens <span class="kw">FROM</span> <span class="tbl">Garden</span>;</pre>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════ G1: FILE STRUCTURE ══════════ -->
+      <section id="g1">
+        <div class="section-header">
+          <div class="section-icon" style="background:#e8f5e9">🗂️</div>
+          <h2>File Structure</h2>
+          <span class="section-badge badge-green">Reference</span>
+        </div>
+
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="fc-icon">🏗️</div>
+            <div class="fc-title">00_schema.sql</div>
+            <div class="fc-desc">38 CREATE TABLE statements, all FK constraints, indexes, generated columns</div>
+          </div>
+          <div class="feature-card">
+            <div class="fc-icon">⚡</div>
+            <div class="fc-title">01_triggers.sql</div>
+            <div class="fc-desc">12 triggers — guards, auto-compute fields, audit logs, stock deduction</div>
+          </div>
+          <div class="feature-card">
+            <div class="fc-icon">⚙️</div>
+            <div class="fc-title">02_procedures.sql</div>
+            <div class="fc-desc">12 stored procedures — register, verify, harvest, distribute, export, report</div>
+          </div>
+          <div class="feature-card">
+            <div class="fc-icon">📊</div>
+            <div class="fc-title">03_views.sql</div>
+            <div class="fc-desc">6 reporting views for ministry dashboards and worker analytics</div>
+          </div>
+          <div class="feature-card">
+            <div class="fc-icon">🔄</div>
+            <div class="fc-title">04_transactions.sql</div>
+            <div class="fc-desc">8 atomic multi-table transaction scripts with ROLLBACK handling</div>
+          </div>
+          <div class="feature-card">
+            <div class="fc-icon">🔐</div>
+            <div class="fc-title">05_users.sql</div>
+            <div class="fc-desc">5 role-based MySQL user accounts with granular GRANT statements</div>
+          </div>
+          <div class="feature-card">
+            <div class="fc-icon">🌱</div>
+            <div class="fc-title">06_seed_data.sql</div>
+            <div class="fc-desc">Demo data: farmers, farms, gardens, seasons, exports, cooperative</div>
+          </div>
+          <div class="feature-card">
+            <div class="fc-icon">▶️</div>
+            <div class="fc-title">run_all.sql</div>
+            <div class="fc-desc">Master runner — sources all files in the correct dependency order</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════ G2: SCHEMA DEMO ══════════ -->
+      <section id="g2">
+        <div class="section-header">
+          <div class="section-icon" style="background:#e3f2fd">🏗️</div>
+          <h2>Schema Demo</h2>
+          <span class="section-badge badge-blue">DDL + DML</span>
+        </div>
+
+        <p style="margin-bottom:18px;color:var(--muted)">
+          Real insert sequences that walk through the data model from top to bottom.
+        </p>
+
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <div class="step-title">Insert the location hierarchy</div>
+              <div class="step-desc">Location data must exist before any Person, Farm, or Garden.</div>
+              <div class="code-wrap">
+                <pre><span class="kw">INSERT INTO</span> <span class="tbl">Region</span> (Name) <span class="kw">VALUES</span> (<span class="str">'Eastern'</span>);
+<span class="kw">INSERT INTO</span> <span class="tbl">District</span> (Name, RegionID) <span class="kw">VALUES</span> (<span class="str">'Mbale'</span>, <span class="num">1</span>);
+<span class="kw">INSERT INTO</span> <span class="tbl">Subcounty</span> (Name, DistrictID) <span class="kw">VALUES</span> (<span class="str">'Bufumbo'</span>, <span class="num">1</span>);
+<span class="kw">INSERT INTO</span> <span class="tbl">Village</span> (Name, SubcountyID) <span class="kw">VALUES</span> (<span class="str">'Nabyeya'</span>, <span class="num">1</span>);</pre>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <div class="step-title">Register a new farmer</div>
+              <div class="step-desc">Person must be inserted before Farmer (NIN FK constraint).</div>
+              <div class="code-wrap">
+                <pre><span class="cm">-- Step A: create the supertype Person record</span>
+<span class="kw">INSERT INTO</span> <span class="tbl">Person</span> (NIN, FirstName, LastName, Sex, DOB, Phone1, VillageID)
+<span class="kw">VALUES</span> (<span class="str">'CM95080010X'</span>, <span class="str">'John'</span>, <span class="str">'Wafula'</span>, <span class="str">'M'</span>, <span class="str">'1995-08-12'</span>, <span class="str">'0703456789'</span>, <span class="num">1</span>);
+
+<span class="cm">-- Step B: create the Farm (Acreage starts at 0, trigger will update it)</span>
+<span class="kw">INSERT INTO</span> <span class="tbl">Farm</span> (YearPlanted) <span class="kw">VALUES</span> (<span class="num">2021</span>);
+<span class="kw">SET</span> @new_farm = <span class="fn">LAST_INSERT_ID</span>();
+
+<span class="cm">-- Step C: create the Farmer subtype</span>
+<span class="kw">INSERT INTO</span> <span class="tbl">Farmer</span> (NIN, FarmID)
+<span class="kw">VALUES</span> (<span class="str">'CM95080010X'</span>, @new_farm);
+<span class="kw">SET</span> @new_farmer = <span class="fn">LAST_INSERT_ID</span>();
+
+<span class="cm">-- Confirm</span>
+<span class="kw">SELECT</span> f.FarmerID, p.FirstName, p.LastName, fm.Acreage
+<span class="kw">FROM</span> <span class="tbl">Farmer</span> f
+<span class="kw">JOIN</span> <span class="tbl">Person</span> p  <span class="kw">ON</span> f.NIN    = p.NIN
+<span class="kw">JOIN</span> <span class="tbl">Farm</span>   fm <span class="kw">ON</span> f.FarmID = fm.FarmID
+<span class="kw">WHERE</span> f.FarmerID = @new_farmer;</pre>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <div class="step-title">Add a Coffee Grade and a Garden</div>
+              <div class="step-desc">Garden links Farm ↔ CoffeeGrade ↔ Village.</div>
+              <div class="code-wrap">
+                <pre><span class="cm">-- Coffee classification</span>
+<span class="kw">INSERT INTO</span> <span class="tbl">CoffeeType</span> (TypeName, TreeSpacing, PlantsPerAcre)
+<span class="kw">VALUES</span> (<span class="str">'Arabica'</span>, <span class="str">'8×8 ft'</span>, <span class="num">680</span>);
+
+<span class="kw">INSERT INTO</span> <span class="tbl">CoffeeGrade</span> (TypeID, GradeName, MinPriceUGX, MaxPriceUGX)
+<span class="kw">VALUES</span> (<span class="fn">LAST_INSERT_ID</span>(), <span class="str">'Bugisu AA'</span>, <span class="num">9500</span>, <span class="num">13000</span>);
+<span class="kw">SET</span> @grade = <span class="fn">LAST_INSERT_ID</span>();
+
+<span class="cm">-- Garden (trigger AfterGardenInsert fires, updates Farm.Acreage)</span>
+<span class="kw">INSERT INTO</span> <span class="tbl">Garden</span>
+  (FarmID, VillageID, Acreage, GradeID, PlantingDate, NumberOfTrees)
+<span class="kw">VALUES</span>
+  (@new_farm, <span class="num">1</span>, <span class="num">3.00</span>, @grade, <span class="str">'2021-06-01'</span>, <span class="num">680</span>);
+
+<span class="cm">-- Check Farm.Acreage was auto-updated by trigger</span>
+<span class="kw">SELECT</span> FarmID, Acreage, CoffeeVariety <span class="kw">FROM</span> <span class="tbl">Farm</span>
+<span class="kw">WHERE</span>  FarmID = @new_farm;</pre>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <table class="result-table" style="margin-top:8px">
+                <tr><th>FarmID</th><th>Acreage</th><th>CoffeeVariety</th></tr>
+                <tr><td>5</td><td>3.0000</td><td>Bugisu AA</td></tr>
+              </table>
+              <div class="callout trigger">
+                <span class="callout-icon">⚡</span>
+                <div><strong>Trigger fired:</strong> <code>AfterGardenInsert</code> + <code>FarmCoffeeVarietyInsert</code> —
+                both ran automatically. <code>Farm.Acreage</code> and <code>CoffeeVariety</code> were set without any
+                explicit UPDATE.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════ G3: TRIGGERS ══════════ -->
+      <section id="g3">
+        <div class="section-header">
+          <div class="section-icon" style="background:#f3e5f5">⚡</div>
+          <h2>Triggers Demo</h2>
+          <span class="section-badge badge-purple">12 Triggers</span>
+        </div>
+
+        <div class="trigger-list" style="margin-bottom:20px">
+          <div class="trigger-card success-trigger">
+            <div class="tc-head">
+              <span class="tc-name">AfterGardenInsert / Update</span>
+              <span class="tc-event">AFTER INSERT + UPDATE on Garden</span>
+            </div>
+            <div class="tc-desc">Recomputes <code>Farm.Acreage = SUM(Garden.Acreage)</code> automatically. Also rebuilds <code>CoffeeVariety</code> string.</div>
+          </div>
+          <div class="trigger-card warn-trigger">
+            <div class="tc-head">
+              <span class="tc-name">BlockUnverifiedGardenHarvest</span>
+              <span class="tc-event">BEFORE INSERT on ProductionRecord</span>
+            </div>
+            <div class="tc-desc">Raises SQLSTATE 45000 if <code>Garden.IsVerified = FALSE</code>. A harvest cannot be recorded until an extension worker verifies the plot.</div>
+          </div>
+          <div class="trigger-card">
+            <div class="tc-head">
+              <span class="tc-name">BeforeDistributionItemInsert</span>
+              <span class="tc-event">BEFORE INSERT on DistributionItem</span>
+            </div>
+            <div class="tc-desc">Checks <code>Inputs.Qty >= QuantityGiven</code>. Blocks if stock is insufficient.</div>
+          </div>
+          <div class="trigger-card success-trigger">
+            <div class="tc-head">
+              <span class="tc-name">AfterDistributionItemInsert</span>
+              <span class="tc-event">AFTER INSERT on DistributionItem</span>
+            </div>
+            <div class="tc-desc">Deducts <code>Inputs.Qty -= QuantityGiven</code>. Writes an audit row to <code>DistributionLog</code>.</div>
+          </div>
+          <div class="trigger-card success-trigger">
+            <div class="tc-head">
+              <span class="tc-name">AfterProcessingRecord</span>
+              <span class="tc-event">AFTER INSERT on ProcessingRecord</span>
+            </div>
+            <div class="tc-desc">Calculates <code>LossKg = RawKgIn − ProcessedKgOut</code> and <code>YieldPct</code>. Writes to <code>ProcessingAuditLog</code>.</div>
+          </div>
+          <div class="trigger-card success-trigger">
+            <div class="tc-head">
+              <span class="tc-name">AfterExportBatchInsert</span>
+              <span class="tc-event">AFTER INSERT on ExportBatch</span>
+            </div>
+            <div class="tc-desc">Upserts <code>SeasonExportSummary</code> running totals (TotalKg, TotalUSD) for ministry dashboards.</div>
+          </div>
+        </div>
+
+        <!-- DEMO: block bad harvest -->
+        <div class="step">
+          <div class="step-num">▶</div>
+          <div class="step-body">
+            <div class="step-title">Demo — Block unverified garden harvest</div>
+            <div class="step-desc">Garden 4 has <code>IsVerified = FALSE</code> in the seed data.</div>
+            <div class="code-wrap">
+              <pre><span class="cm">-- This will be BLOCKED by trigger T3</span>
+<span class="kw">INSERT INTO</span> <span class="tbl">ProductionRecord</span>
+  (GardenID, SeasonID, DateHarvested, HarvestedKg, ProductionCost)
+<span class="kw">VALUES</span> (<span class="num">4</span>, <span class="num">1</span>, <span class="str">'2025-01-10'</span>, <span class="num">180.00</span>, <span class="num">900000</span>);
+
+<span class="cm">-- Expected: ERROR 1644 (45000):
+-- Garden must be verified before recording a harvest.</span></pre>
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <div class="code-wrap" style="margin-top:8px">
+              <pre><span class="cm">-- First verify it, then retry</span>
+<span class="kw">UPDATE</span> <span class="tbl">Garden</span> <span class="kw">SET</span> IsVerified = <span class="kw">TRUE</span> <span class="kw">WHERE</span> GardenID = <span class="num">4</span>;
+
+<span class="kw">INSERT INTO</span> <span class="tbl">ProductionRecord</span>
+  (GardenID, SeasonID, DateHarvested, HarvestedKg, ProductionCost)
+<span class="kw">VALUES</span> (<span class="num">4</span>, <span class="num">1</span>, <span class="str">'2025-01-10'</span>, <span class="num">180.00</span>, <span class="num">900000</span>);
+<span class="cm">-- Query OK, 1 row affected</span></pre>
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DEMO: stock deduction -->
+        <div class="step" style="margin-top:16px">
+          <div class="step-num">▶</div>
+          <div class="step-body">
+            <div class="step-title">Demo — Automatic stock deduction</div>
+            <div class="step-desc">After inserting a DistributionItem, Inputs.Qty is automatically reduced.</div>
+            <div class="code-wrap">
+              <pre><span class="cm">-- Before: check NPK fertilizer stock</span>
+<span class="kw">SELECT</span> InputID, Name, Qty <span class="kw">FROM</span> <span class="tbl">Inputs</span> <span class="kw">WHERE</span> InputID = <span class="num">2</span>;
+<span class="cm">-- Qty: 800</span>
+
+<span class="kw">INSERT INTO</span> <span class="tbl">Distribution</span>
+  (FarmerID, GardenID, WorkerID, DateDistributed)
+<span class="kw">VALUES</span> (<span class="num">1</span>, <span class="num">1</span>, <span class="num">1</span>, <span class="fn">CURDATE</span>());
+<span class="kw">SET</span> @d = <span class="fn">LAST_INSERT_ID</span>();
+
+<span class="kw">INSERT INTO</span> <span class="tbl">DistributionItem</span> (DistribID, InputID, QuantityGiven)
+<span class="kw">VALUES</span> (@d, <span class="num">2</span>, <span class="num">100.00</span>);
+
+<span class="cm">-- After: trigger deducted 100 automatically</span>
+<span class="kw">SELECT</span> InputID, Name, Qty <span class="kw">FROM</span> <span class="tbl">Inputs</span> <span class="kw">WHERE</span> InputID = <span class="num">2</span>;
+<span class="cm">-- Qty: 700</span>
+
+<span class="cm">-- Verify the audit log was written</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">DistributionLog</span> <span class="kw">ORDER BY</span> LogTime <span class="kw">DESC LIMIT</span> <span class="num">1</span>;</pre>
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════ G4: PROCEDURES ══════════ -->
+      <section id="g4">
+        <div class="section-header">
+          <div class="section-icon" style="background:#fff3e0">⚙️</div>
+          <h2>Stored Procedures Demo</h2>
+          <span class="section-badge badge-orange">12 Procedures</span>
+        </div>
+
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <div class="step-title">RegisterFarmer — atomic onboarding</div>
+              <div class="step-desc">Inserts Person + Farmer in a single transaction. Rolls back if either fails.</div>
+              <div class="code-wrap">
+                <pre><span class="kw">CALL</span> <span class="fn">RegisterFarmer</span>(
+  <span class="str">'CM99010020Y'</span>,  <span class="cm">-- NIN</span>
+  <span class="str">'David'</span>,         <span class="cm">-- FirstName</span>
+  <span class="str">'Kiiza'</span>,          <span class="cm">-- LastName</span>
+  <span class="str">'M'</span>,              <span class="cm">-- Sex</span>
+  <span class="str">'1999-01-15'</span>,    <span class="cm">-- DOB</span>
+  <span class="str">'0712345678'</span>,    <span class="cm">-- Phone</span>
+  <span class="num">2</span>,               <span class="cm">-- VillageID</span>
+  <span class="num">1</span>,               <span class="cm">-- FarmID (existing farm)</span>
+  @new_farmer_id   <span class="cm">-- OUT: returned FarmerID</span>
+);
+
+<span class="kw">SELECT</span> @new_farmer_id <span class="kw">AS</span> new_farmer;</pre>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <div class="step-title">VerifyGarden + RecordHarvest</div>
+              <div class="step-desc">Verify the garden (extension worker) then record the harvest for the season.</div>
+              <div class="code-wrap">
+                <pre><span class="cm">-- Worker 1 verifies Garden 4 (was unverified in seed data)</span>
+<span class="kw">CALL</span> <span class="fn">VerifyGarden</span>(<span class="num">4</span>, <span class="num">1</span>);
+
+<span class="cm">-- Now record the harvest (trigger will no longer block it)</span>
+<span class="kw">CALL</span> <span class="fn">RecordHarvest</span>(
+  <span class="num">4</span>,            <span class="cm">-- GardenID</span>
+  <span class="num">1</span>,            <span class="cm">-- SeasonID</span>
+  <span class="str">'2025-01-10'</span>,<span class="cm">-- DateHarvested</span>
+  <span class="num">180.00</span>,       <span class="cm">-- HarvestedKg</span>
+  <span class="num">900000</span>,       <span class="cm">-- ProductionCost (UGX)</span>
+  @prod_id      <span class="cm">-- OUT: ProdID</span>
+);
+
+<span class="kw">SELECT</span> @prod_id <span class="kw">AS</span> new_prod_id;</pre>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <div class="step-title">DistributeToGarden — JSON-driven bulk items</div>
+              <div class="step-desc">Passes multiple input items as a JSON array. Pre-validates stock for all before touching anything.</div>
+              <div class="code-wrap">
+                <pre><span class="kw">CALL</span> <span class="fn">DistributeToGarden</span>(
+  <span class="num">1</span>,    <span class="cm">-- FarmerID</span>
+  <span class="num">1</span>,    <span class="cm">-- GardenID</span>
+  <span class="num">1</span>,    <span class="cm">-- WorkerID</span>
+  <span class="str">'[{"InputID":2,"Qty":50},{"InputID":3,"Qty":30}]'</span>,
+  @distrib_id
+);
+
+<span class="cm">-- Verify stock was deducted for BOTH items</span>
+<span class="kw">SELECT</span> InputID, Name, Qty <span class="kw">FROM</span> <span class="tbl">Inputs</span>
+<span class="kw">WHERE</span>  InputID <span class="kw">IN</span> (<span class="num">2</span>, <span class="num">3</span>);</pre>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <div class="step-title">CreateExportBatch — license + stock validation</div>
+              <div class="step-desc">Validates exporter license and won't allow exporting more than was processed.</div>
+              <div class="code-wrap">
+                <pre><span class="kw">CALL</span> <span class="fn">CreateExportBatch</span>(
+  <span class="num">1</span>,           <span class="cm">-- ExporterID</span>
+  <span class="num">1</span>,           <span class="cm">-- ProcessID</span>
+  <span class="num">1</span>,           <span class="cm">-- SeasonID</span>
+  <span class="num">4</span>,           <span class="cm">-- GradeID (Bugisu AA)</span>
+  <span class="num">40.00</span>,       <span class="cm">-- QuantityKg</span>
+  <span class="str">'Netherlands'</span>,<span class="cm">-- DestCountry</span>
+  <span class="num">3.72</span>,        <span class="cm">-- USDPricePerKg</span>
+  @batch_id    <span class="cm">-- OUT: BatchID</span>
+);
+
+<span class="kw">SELECT</span> BatchID, QuantityKg, TotalUSD, Status
+<span class="kw">FROM</span> <span class="tbl">ExportBatch</span> <span class="kw">WHERE</span> BatchID = @batch_id;</pre>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <div class="callout trigger">
+                <span class="callout-icon">⚡</span>
+                <div><strong>AfterExportBatchInsert</strong> trigger fired: <code>SeasonExportSummary</code> totals were updated automatically. <code>TotalUSD</code> is a MySQL generated column (no trigger needed).</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">5</div>
+            <div class="step-body">
+              <div class="step-title">GetFarmerProductionReport — full history</div>
+              <div class="step-desc">Returns harvests, processing, and exports for a farmer in one call.</div>
+              <div class="code-wrap">
+                <pre><span class="kw">CALL</span> <span class="fn">GetFarmerProductionReport</span>(<span class="num">1</span>);
+<span class="cm">-- Returns: GardenID, SeasonName, DateHarvested, HarvestedKg,
+--          ProcessType, RawKgIn, ProcessedKgOut, LossKg,
+--          YieldPct, DestCountry, ExportedKg, TotalUSD</span></pre>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════ G5: VIEWS ══════════ -->
+      <section id="g5">
+        <div class="section-header">
+          <div class="section-icon" style="background:#e0f2f1">📊</div>
+          <h2>Views Demo</h2>
+          <span class="section-badge" style="background:#e0f2f1;color:#00695c">6 Views</span>
+        </div>
+
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <div class="step-title">Ministry_Regional_Production</div>
+              <div class="step-desc">Total harvest kg and cost per district per season — the ministry's primary oversight view.</div>
+              <div class="code-wrap">
+                <pre><span class="kw">SELECT</span> *
+<span class="kw">FROM</span>  <span class="tbl">Ministry_Regional_Production</span>
+<span class="kw">WHERE</span> Region = <span class="str">'Eastern'</span>
+<span class="kw">ORDER BY</span> Season <span class="kw">DESC</span>;</pre>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <table class="result-table" style="margin-top:6px">
+                <tr><th>Region</th><th>District</th><th>Season</th><th>Active_Farmers</th><th>Total_HarvestedKg</th><th>Total_ProductionCost_UGX</th></tr>
+                <tr><td>Eastern</td><td>Mbale</td><td>2025 Second Season</td><td>2</td><td>985.00</td><td>4925000</td></tr>
+                <tr><td>Eastern</td><td>Mbale</td><td>2024 First Season</td><td>3</td><td>1410.00</td><td>7050000</td></tr>
+              </table>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <div class="step-title">Ministry_Export_Summary</div>
+              <div class="step-desc">Season-level export totals broken down by coffee grade and destination country.</div>
+              <div class="code-wrap">
+                <pre><span class="kw">SELECT</span> SeasonName, GradeName, DestCountry,
+       TotalExportedKg, TotalUSD, AvgUSDPerKg
+<span class="kw">FROM</span>  <span class="tbl">Ministry_Export_Summary</span>;</pre>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <table class="result-table" style="margin-top:6px">
+                <tr><th>SeasonName</th><th>GradeName</th><th>DestCountry</th><th>TotalExportedKg</th><th>TotalUSD</th></tr>
+                <tr><td>2024 First Season</td><td>Bugisu AA</td><td>Germany</td><td>250.00</td><td>962.50</td></tr>
+                <tr><td>2024 First Season</td><td>Bugisu AA</td><td>Netherlands</td><td>380.00</td><td>1413.60</td></tr>
+              </table>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <div class="step-title">Input_Stock_Status</div>
+              <div class="step-desc">Real-time stock levels with LOW STOCK / OUT OF STOCK alerts.</div>
+              <div class="code-wrap">
+                <pre><span class="kw">SELECT</span> InputName, Category, CurrentStock,
+       ReorderLevel, StockStatus
+<span class="kw">FROM</span>  <span class="tbl">Input_Stock_Status</span>
+<span class="kw">WHERE</span> StockStatus != <span class="str">'OK'</span>;</pre>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <div class="step-title">Processing_Yield_Report</div>
+              <div class="step-desc">Per-record yield analysis including LossPct (auto-computed by trigger).</div>
+              <div class="code-wrap">
+                <pre><span class="kw">SELECT</span> ProcessorName, SeasonName, GradeName,
+       RawKgIn, ProcessedKgOut, LossKg, YieldPct, LossPct
+<span class="kw">FROM</span>  <span class="tbl">Processing_Yield_Report</span>
+<span class="kw">ORDER BY</span> YieldPct <span class="kw">DESC</span>;</pre>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <table class="result-table" style="margin-top:6px">
+                <tr><th>ProcessorName</th><th>RawKgIn</th><th>ProcessedKgOut</th><th>LossKg</th><th>YieldPct</th></tr>
+                <tr><td>Bugisu Coffee Mills Ltd</td><td>420.00</td><td>294.00</td><td>126.00</td><td>70.00</td></tr>
+                <tr><td>Bugisu Coffee Mills Ltd</td><td>610.00</td><td>427.00</td><td>183.00</td><td>70.00</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════ G6: TRANSACTIONS ══════════ -->
+      <section id="g6">
+        <div class="section-header">
+          <div class="section-icon" style="background:#e8f5e9">🔄</div>
+          <h2>Transactions Demo</h2>
+          <span class="section-badge badge-green">ACID</span>
+        </div>
+
+        <div class="callout info">
+          <span class="callout-icon">ℹ️</span>
+          <div>All transactions use <code>START TRANSACTION … COMMIT</code> with <code>DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;</code> so that any error in any step rolls back the entire operation.</div>
+        </div>
+
+        <div class="steps" style="margin-top:20px">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <div class="step-title">TXN-1 — Full Farmer Registration (5 tables)</div>
+              <div class="code-wrap">
+                <pre><span class="kw">START TRANSACTION</span>;
+
+<span class="kw">INSERT INTO</span> <span class="tbl">Person</span> (NIN, FirstName, LastName, Sex, DOB, Phone1, VillageID)
+<span class="kw">VALUES</span> (<span class="str">'CM98051122Z'</span>, <span class="str">'Mary'</span>, <span class="str">'Nabwire'</span>, <span class="str">'F'</span>, <span class="str">'1998-05-11'</span>, <span class="str">'0756789012'</span>, <span class="num">2</span>);
+
+<span class="kw">INSERT INTO</span> <span class="tbl">Farm</span> (YearPlanted) <span class="kw">VALUES</span> (<span class="num">2022</span>);
+<span class="kw">SET</span> @f = <span class="fn">LAST_INSERT_ID</span>();
+
+<span class="kw">INSERT INTO</span> <span class="tbl">Farmer</span> (NIN, FarmID) <span class="kw">VALUES</span> (<span class="str">'CM98051122Z'</span>, @f);
+<span class="kw">SET</span> @fa = <span class="fn">LAST_INSERT_ID</span>();
+
+<span class="kw">INSERT INTO</span> <span class="tbl">Garden</span>
+  (FarmID, VillageID, Acreage, GradeID, PlantingDate, NumberOfTrees)
+<span class="kw">VALUES</span> (@f, <span class="num">2</span>, <span class="num">2.00</span>, <span class="num">4</span>, <span class="str">'2022-03-01'</span>, <span class="num">545</span>);
+<span class="kw">SET</span> @g = <span class="fn">LAST_INSERT_ID</span>();
+
+<span class="kw">INSERT INTO</span> <span class="tbl">GardenSeason</span> (GardenID, SeasonID) <span class="kw">VALUES</span> (@g, <span class="num">2</span>);
+
+<span class="kw">COMMIT</span>;
+<span class="cm">-- All 5 inserts succeed together, or none do.</span></pre>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <div class="step-title">TXN-2 — Harvest → Process → Sell pipeline</div>
+              <div class="code-wrap">
+                <pre><span class="kw">START TRANSACTION</span>;
+
+<span class="kw">INSERT INTO</span> <span class="tbl">ProductionRecord</span>
+  (GardenID, SeasonID, DateHarvested, HarvestedKg, ProductionCost)
+<span class="kw">VALUES</span> (<span class="num">1</span>, <span class="num">2</span>, <span class="str">'2025-07-15'</span>, <span class="num">200.00</span>, <span class="num">1000000</span>);
+<span class="kw">SET</span> @pr = <span class="fn">LAST_INSERT_ID</span>();
+
+<span class="cm">-- Trigger computes LossKg & YieldPct automatically</span>
+<span class="kw">INSERT INTO</span> <span class="tbl">ProcessingRecord</span>
+  (GardenID, ProcessorID, SeasonID, RawKgIn, ProcessedKgOut, ProcessType, ProcessedDate)
+<span class="kw">VALUES</span> (<span class="num">1</span>, <span class="num">1</span>, <span class="num">2</span>, <span class="num">200.00</span>, <span class="num">140.00</span>, <span class="str">'Wet'</span>, <span class="str">'2025-07-20'</span>);
+
+<span class="kw">INSERT INTO</span> <span class="tbl">SaleRecord</span>
+  (ProdID, DateSold, QuantityKg, UnitPrice, PaymentStatus, BuyerType)
+<span class="kw">VALUES</span> (@pr, <span class="str">'2025-07-25'</span>, <span class="num">80.00</span>, <span class="num">11000.00</span>, <span class="str">'Paid'</span>, <span class="str">'Exporter'</span>);
+
+<span class="kw">COMMIT</span>;</pre>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <div class="step-title">TXN-6 — Season Closure & Rollover</div>
+              <div class="code-wrap">
+                <pre><span class="kw">START TRANSACTION</span>;
+
+<span class="cm">-- Close current season</span>
+<span class="kw">UPDATE</span> <span class="tbl">Season</span> <span class="kw">SET</span> EndDate = <span class="fn">CURDATE</span>()
+<span class="kw">WHERE</span>  SeasonID = <span class="num">2</span> <span class="kw">AND</span> EndDate <span class="kw">IS NULL</span>;
+
+<span class="cm">-- Open new season</span>
+<span class="kw">INSERT INTO</span> <span class="tbl">Season</span> (SeasonName, StartDate, SeasonOrder)
+<span class="kw">VALUES</span> (<span class="str">'2026 First Season'</span>,
+        <span class="fn">DATE_ADD</span>(<span class="fn">CURDATE</span>(), <span class="kw">INTERVAL</span> <span class="num">30</span> <span class="kw">DAY</span>), <span class="str">'First'</span>);
+
+<span class="kw">COMMIT</span>;</pre>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout warn">
+          <span class="callout-icon">⚠️</span>
+          <div><strong>Run the full set:</strong> All 8 transaction scripts are in <code>sql/04_transactions.sql</code>. Run them with <code>SOURCE sql/04_transactions.sql;</code> against the seed data for a complete end-to-end demonstration.</div>
+        </div>
+      </section>
+
+      <!-- ══════════ G7: USERS ══════════ -->
+      <section id="g7">
+        <div class="section-header">
+          <div class="section-icon" style="background:#ffebee">🔐</div>
+          <h2>User Privileges Demo</h2>
+          <span class="section-badge badge-red">RBAC</span>
+        </div>
+
+        <table class="role-table">
+          <tr>
+            <th>User Account</th>
+            <th>Password</th>
+            <th>Permissions</th>
+          </tr>
+          <tr>
+            <td><strong>agri_admin</strong></td>
+            <td><code>Admin@Agri2026!</code></td>
+            <td>
+              <span class="badge badge-green">ALL PRIVILEGES</span>
+              <span class="badge badge-green">WITH GRANT OPTION</span>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>agri_ministry</strong></td>
+            <td><code>Ministry@2026!</code></td>
+            <td>
+              <span class="badge badge-blue">SELECT *</span>
+              <span class="badge badge-blue">INSERT/UPDATE ResourceRequest</span>
+              <span class="badge badge-blue">INSERT/UPDATE Scheme</span>
+              <span class="badge badge-blue">EXECUTE 3 procedures</span>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>agri_extworker</strong></td>
+            <td><code>ExtWork@2026!</code></td>
+            <td>
+              <span class="badge badge-orange">SELECT on 14 tables</span>
+              <span class="badge badge-orange">INSERT/UPDATE FarmVisit</span>
+              <span class="badge badge-orange">INSERT Distribution</span>
+              <span class="badge badge-orange">EXECUTE 4 procedures</span>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>agri_farmer</strong></td>
+            <td><code>Farmer@2026!</code></td>
+            <td>
+              <span class="badge badge-purple">SELECT on own tables</span>
+              <span class="badge badge-purple">SELECT views</span>
+              <span class="badge badge-purple">EXECUTE 1 procedure</span>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>agri_readonly</strong></td>
+            <td><code>ReadOnly@2026!</code></td>
+            <td>
+              <span class="badge" style="background:#f5f5f5;color:#555">SELECT 6 views only</span>
+              <span class="badge" style="background:#f5f5f5;color:#555">No base table access</span>
+            </td>
+          </tr>
+        </table>
+
+        <div class="steps" style="margin-top:24px">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <div class="step-title">Deploy user accounts</div>
+              <div class="code-wrap">
+                <pre><span class="cm">-- (Already included in run_all.sql)</span>
+<span class="kw">SOURCE</span> sql/05_users.sql;</pre>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <div class="step-title">Test the extension worker role</div>
+              <div class="step-desc">Connect as agri_extworker and prove the permission boundaries.</div>
+              <div class="code-wrap">
+                <pre><span class="cm"># Connect as extension worker</span>
+mysql -u agri_extworker -p<span class="str">'ExtWork@2026!'</span> agri_db
+
+<span class="cm">-- Allowed: view assigned gardens</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">Farmer_Garden_Overview</span> <span class="kw">LIMIT</span> <span class="num">5</span>;
+
+<span class="cm">-- Allowed: record a farm visit</span>
+<span class="kw">INSERT INTO</span> <span class="tbl">FarmVisit</span>
+  (WorkerID, FarmerID, GardenID, VisitDate, Purpose)
+<span class="kw">VALUES</span> (<span class="num">1</span>, <span class="num">1</span>, <span class="num">1</span>, <span class="fn">CURDATE</span>(), <span class="str">'Monitoring'</span>);
+
+<span class="cm">-- BLOCKED: cannot view SaleRecord (financial data)</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">SaleRecord</span>;
+<span class="cm">-- ERROR 1142: SELECT command denied</span>
+
+<span class="cm">-- BLOCKED: cannot run ministry reporting</span>
+<span class="kw">CALL</span> <span class="fn">GetSeasonExportSummary</span>(<span class="num">1</span>);
+<span class="cm">-- ERROR 1370: execute command denied</span></pre>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <div class="step-title">Test the read-only auditor role</div>
+              <div class="code-wrap">
+                <pre><span class="cm"># Connect as auditor</span>
+mysql -u agri_readonly -p<span class="str">'ReadOnly@2026!'</span> agri_db
+
+<span class="cm">-- Allowed: read any view</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">Ministry_Export_Summary</span>;
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">Processing_Yield_Report</span>;
+
+<span class="cm">-- BLOCKED: no base table access at all</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">Person</span>;
+<span class="cm">-- ERROR 1142: SELECT command denied</span></pre>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <div class="step-title">Verify all grants from admin</div>
+              <div class="code-wrap">
+                <pre><span class="cm">-- List all agri_* accounts</span>
+<span class="kw">SELECT</span> User, Host
+<span class="kw">FROM</span>   mysql.user
+<span class="kw">WHERE</span>  User <span class="kw">LIKE</span> <span class="str">'agri_%'</span>;
+
+<span class="cm">-- Show grants for a specific role</span>
+<span class="kw">SHOW GRANTS FOR</span> <span class="str">'agri_extworker'</span>@<span class="str">'localhost'</span>;</pre>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /content-inner -->
+  </div><!-- /content -->
+</div><!-- /doc-layout -->
+
+<script>
+/* ── Copy to clipboard ── */
+function copyCode(btn) {
+  const pre = btn.previousElementSibling;
+  navigator.clipboard.writeText(pre.innerText).then(() => {
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+/* ── Active sidebar via IntersectionObserver ── */
+const sections = document.querySelectorAll('section[id]');
+const navItems = document.querySelectorAll('.nav-item[data-section]');
+
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navItems.forEach(link => {
+        link.classList.toggle('active', link.dataset.section === e.target.id);
+      });
+    }
+  });
+}, {
+  root: document.getElementById('content'),
+  rootMargin: '-15% 0px -65% 0px',
+  threshold: 0
+});
+
+sections.forEach(s => obs.observe(s));
+
+/* ── Smooth scroll ── */
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.getElementById(a.getAttribute('href').slice(1));
+    if (!target) return;
+    e.preventDefault();
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+</script>
+</body>
+</html>
